@@ -1,0 +1,1 @@
+Circle intersection, working on snell

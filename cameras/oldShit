@@ -1,0 +1,182 @@
+for(uint32_t i=lensElements.size()-1; i >= 0; i++){
+		std::cout << "O: " << ray->o.x << " " << ray->o.y << " " << ray->o.z << std::endl;
+		std::cout << "D: " << ray->d.x << " " << ray->d.y << " " << ray->d.z << std::endl;
+
+		//Sphere ray intersection
+		lensElement elem = lensElements[i];
+		float z = elem.zDist;
+		float rad = elem.radius;
+
+		Point circleo = Point(0,0,z-rad);
+
+		float a = Dot(ray->d,ray->d);
+		float b = Dot(2.f*(ray->o-circleo),ray->d);
+		float c = Dot(ray->o-circleo,ray->o-circleo)-rad*rad;
+
+		float D = b*b-4*a*c;
+		std::cout << "D = " << D << std::endl;
+		if(D<0.f){
+			std::cout << "Missed circle" << std::endl;
+			return 0.0f;
+		}
+
+		float t = (-b+sqrt(D))/(2*a);
+
+		if(t<0.f){
+			std::cout << "Cicle is behind" << std::endl;
+			return 0.0f;
+		}
+
+		//printf("Hit!\n");
+
+		//Refraction
+
+		Point hit = ray->o + t*ray->d;
+
+		std::cout << hit.x << ", " << hit.y << ", " << hit.z << std::endl;
+
+		Vector norm = Normalize(hit-circleo);
+		Vector ns 	= Cross(norm,ray->d);
+		Vector mns  = Cross(-norm,ray->d);
+		float n1 = elem.refraction;
+		float n2 = (i==0) ? lensElements[i-1].refraction : 1.0f;
+		float my = n1/n2;
+
+		D = 1-my*my*Dot(ns,ns);
+		if(D<0.f){
+			std::cout << "Total internal reflection";
+			return 0.0f;
+		}
+
+		D = sqrt(D);
+		Vector nd = my*(Cross(norm,mns))-norm*D;
+		ray->o = hit;
+		ray->d = Normalize(nd);
+		exit(1);
+		//float z1 = z-ray->o.z;
+		//float z2 = n2/((n1/z1)+ ((n2-n1)/rad));
+
+		//Point d = Point(ray->o.x,ray->o.y,z+z2);
+
+		//ray->o = hit;
+		//ray->d = Normalize(d-hit);
+	}
+	/*
+	//Camera point
+	float rasX = sample.imageX;
+	float rasY = sample.imageY;
+
+	float ndcX = rasX/film->xResolution;
+	float ndcY = rasY/film->yResolution;
+	
+	float scale = filmDiag/sqrt((film->xResolution)*(film->xResolution)+(film->yResolution)*(film->yResolution));
+	
+	float scaleX = scale*film->xResolution;
+	float scaleY = scale*film->yResolution;
+
+	float camX = (scaleX)*ndcX;
+	float camY = (scaleY)*ndcY;
+
+	float lastlensdist = lensElements[lensElements.size()-1].zDist;
+	float filmdist = lastlensdist-firstLenseOffset;
+
+	//printf("ras: %f,%f cam: %f %f \n", rasX,rasY, camX, camY);
+    Point Pcamera(camX,camY,filmdist);
+
+    //Lens point
+	float lensU,lensV;
+	ConcentricSampleDisk(sample.lensU,sample.lensV,&lensU,&lensV);
+	lensU *= lensElements[lensElements.size()-1].aperture;
+	lensV *= lensElements[lensElements.size()-1].aperture;
+	Point Plens(lensU,lensV,lastlensdist);
+
+	printf("\nras: %f %f \ncamera: %f, %f, %f \nlens: %f, %f, %f\n\n",rasX,rasY,camX,camY,filmdist,lensU,lensV,lastlensdist);
+	// Ray from camera to first lens
+	std::cout << std::endl;
+	*ray = Ray(Pcamera,Normalize(Plens-Pcamera),0.f,INFINITY);
+
+	for(uint32_t i = lensElements.size()-1; i > 0; i--){
+		//printf("%d\n",i);
+		//printf("Ray origins:(%f,%f,%f) \t Ray direction: (%f,%f,%f)\n",
+		//		ray->o.x,ray->o.y,ray->o.z,ray->d.x,ray->d.y,ray->d.z);
+		
+		lensElement elem = lensElements[lensElements.size()-1]; //lensElements[i];
+		//std::cout << "P: " << ray->o.x << " " << ray->o.z << std::endl;
+		//std::cout << "D: " << ray->d.x << " " << ray->d.y << " " << ray->d.z << std::endl;
+		myfile << ray->o.x << " " << ray->o.z << std::endl;
+		if(elem.radius == 0){
+			float t = (ray->o).z/(ray->d).z;
+			Point hit = ray->o+t*ray->d;
+
+			float aprad = sqrt(hit.x*hit.x+hit.y*hit.y);
+			if(aprad > elem.aperture){
+				printf("Blocked by aperture\n");
+				return 0.0f;
+			}
+		}else{
+
+			Point cpos(0,0,elem.zDist-elem.radius);
+
+			//Compute where ray hits the lense
+			float a = Dot(ray->d,ray->d);
+			float b = Dot(2.f*(ray->o-cpos),ray->d);
+			float c = Dot((ray->o-cpos),ray->o-cpos)-elem.radius*elem.radius;
+
+			//Dot(cpos,cpos)+Dot(Vector(ray->o),Vector(ray->o))-2*Dot(Vector(ray->o),cpos)-elem.radius*elem.radius;
+			float D = b*b-4*a*c;
+			if(D<0){
+				printf("Missed the sphere\n");
+				return 0.0f;
+			}
+			D = sqrt(D);
+
+			float t = (-0.5f)*(b+D)/a;
+			float dist;
+			Point hit;
+			Vector norm;
+			if(t>0.0f){
+				dist = sqrt(a)*t;
+				hit = ray->o + t*ray->d;
+				//std::cout << "Hit!: "<< hit.x << ", " << hit.y <<  ", " << hit.z << std::endl;
+				norm = (hit-cpos)/elem.radius;
+
+				float n1 = elem.refraction;
+				float n2 = (i==0) ? 1.0f : lensElements[i-1].refraction; //lensElements[lensElements.size()-i-1].refraction;
+			
+
+				if(n1 != n2){
+					float z1 = elem.zDist - (ray->o).z;
+					float z2 = n2 /((n1/z1)+(n2-n1)/elem.radius);
+
+					std::cout << "Origin: "<<ray->o.x << ", " << ray->o.y << ", " << ray->o.z << std::endl;
+					std::cout << "Direction: " << ray->d.x << ", " << ray->d.y << ", " << ray->d.z << std::endl;
+					std::cout << "Hit: " << hit.x << ", " << hit.y << ", " << hit.z << std::endl;
+					
+
+					Vector dir = Vector(ray->o);
+					dir.z = elem.zDist+z2;
+					ray->d = Normalize(dir-Vector(hit));
+					ray->o = hit;
+
+					std::cout << "New origin: " << ray->o.x << ", " << ray->o.y << ", " << ray->o.z << std::endl;
+					std::cout << "New direction: " << ray->d.x << ", " << ray->d.y << ", " << ray->d.z << std::endl << std::endl;
+					
+				}
+			}
+
+			//float lensRad = sqrt(hit.x*hit.x+hit.y*hit.y);
+			//if(lensRad > elem.aperture){
+			//	printf("Missed the lens\n");
+			//	return 0.0f;
+			//}
+
+			//int i = 0;
+		}
+	}
+	myfile.close();
+	exit(1);
+	*/
+  	// use sample->imageX and sample->imageY to get raster-space coordinates
+  	// of the sample point on the film.
+ 	// use sample->lensU and sample->lensV to get a sample position on the lens
+	exit(1);

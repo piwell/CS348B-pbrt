@@ -1,0 +1,28 @@
+# Converted from "prism.obj" by obj2pbrt
+# Scene bounds: (-1.000000, -1.000000, -1.000000) - (1.000000, 1.000000, 1.000000)
+
+
+# Name "Cube"
+AttributeBegin
+Shape "trianglemesh"
+  "point P" [
+    1 -1 -1 
+    1 -1 1 
+    -1 -1 1 
+    -1 -1 -1 
+    1 1 9.999999975e-07 
+    -1 1 -0 
+    ]
+  "integer indices" [
+    0 1 2 
+    0 2 3 
+    1 4 5 
+    1 5 2 
+    0 4 1 
+    2 5 3 
+    4 0 3 
+    4 3 5 
+    ]
+AttributeEnd
+
+
