@@ -109,17 +109,13 @@ void SampledSpectrum::splitSpectrum(vector<SampledSpectrum>& spectrums){
     }
 }
 
-bool SampledSpectrum::checkMonochromatic(int &lambda){
+bool SampledSpectrum::checkMonochromatic(){
   bool first = false;
-  int spectralStep = (sampledLambdaEnd-sampledLambdaStart)/nSpectralSamples;
   for(int i=0; i<=nSpectralSamples; ++i){
-    if(c[i]>0.f && first == true){
+    if(c[i]>0.f && first == true)
       return false;
-    }
-    if(c[i]>0.f && first == false){
-      lambda = sampledLambdaStart+i*spectralStep;
+    if(c[i]>0.f && first == false)
       first = true;
-    }
   }
   return true;
 }
@@ -127,28 +123,21 @@ bool SampledSpectrum::checkMonochromatic(int &lambda){
 void RGBSpectrum::splitSpectrum(vector<RGBSpectrum>& spectrums){
   int spectralStep = (sampledLambdaEnd-sampledLambdaStart)/2;
   for(int i=0; i<3; ++i){
-      RGBSpectrum spec(0);// = new RGBSpectrum(0);
+      RGBSpectrum spec(0);
       spec.c[i] = c[i];
       spec.monochromatic = true;
       spec.lambda = sampledLambdaStart+i*spectralStep;
-      // printf("Lambda func: %d, i: %d\n",lambda, i);
       spectrums.push_back(spec);
   }
-  // printf("Lambda %d\n",spectrums.at(0).lambda);
 }
 
-bool RGBSpectrum::checkMonochromatic(int &lambda){
+bool RGBSpectrum::checkMonochromatic(){
   bool first = false;
-  int spectralStep = (sampledLambdaEnd-sampledLambdaStart)/2;
   for(int i=0; i<3; ++i){
-    if(c[i]>0.f && first == true){
+    if(c[i]>0.f && first == true)
       return false;
-    }
-
-    if(c[i]>0.f && first == false){
-      lambda = sampledLambdaStart+i*spectralStep;
+    if(c[i]>0.f && first == false)
       first = true;
-    }
   }
   return true;
 }

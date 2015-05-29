@@ -263,10 +263,13 @@ class SampledSpectrum : public CoefficientSpectrum<nSpectralSamples> {
 public:
     // SampledSpectrum Public Methods
     SampledSpectrum(float v = 0.f) {
+        monochromatic = checkMonochromatic();
         for (int i = 0; i < nSpectralSamples; ++i) c[i] = v;
     }
     SampledSpectrum(const CoefficientSpectrum<nSpectralSamples> &v)
-        : CoefficientSpectrum<nSpectralSamples>(v) { }
+        : CoefficientSpectrum<nSpectralSamples>(v) { 
+        monochromatic = checkMonochromatic();
+        }
     static SampledSpectrum FromSampled(const float *lambda,
                                        const float *v, int n) {
         // Sort samples if unordered, use sorted for returned spectrum
@@ -365,8 +368,6 @@ public:
         XYZToRGB(xyz, rgb);
     }
 
-    void splitSpectrum(vector<SampledSpectrum>& spectrums);
-    bool checkMonochromatic(int &lambda);
     
     RGBSpectrum ToRGBSpectrum() const;
     static SampledSpectrum FromRGB(const float rgb[3],
@@ -378,6 +379,10 @@ public:
         return FromRGB(rgb, type);
     }
     SampledSpectrum(const RGBSpectrum &r, SpectrumType type = SPECTRUM_REFLECTANCE);
+
+    void splitSpectrum(vector<SampledSpectrum>& spectrums);
+    bool checkMonochromatic();
+
     bool monochromatic;
     int lambda;
 private:
@@ -399,15 +404,15 @@ class RGBSpectrum : public CoefficientSpectrum<3> {
 public:
     // RGBSpectrum Public Methods
     RGBSpectrum(float v = 0.f) : CoefficientSpectrum<3>(v) {
-        // monochromatic = false;
+        monochromatic = checkMonochromatic();;
     }
     RGBSpectrum(const CoefficientSpectrum<3> &v)
         : CoefficientSpectrum<3>(v) { 
-            // monochromatic = false;
+        monochromatic = checkMonochromatic();
         }
     RGBSpectrum(const RGBSpectrum &s, SpectrumType type = SPECTRUM_REFLECTANCE) {
         *this = s;
-        // monochromatic = false;
+        monochromatic = checkMonochromatic();
     }
     static RGBSpectrum FromRGB(const float rgb[3],
             SpectrumType type = SPECTRUM_REFLECTANCE) {
@@ -465,7 +470,8 @@ public:
     }
 
     void splitSpectrum(vector<RGBSpectrum>& spectrums);
-    bool checkMonochromatic(int &lambda);
+    bool checkMonochromatic();
+
     int lambda;
     bool monochromatic;
 };

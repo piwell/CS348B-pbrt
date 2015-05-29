@@ -487,15 +487,8 @@ void PhotonShootingTask::Run() {
                         
                         //Split the spectum 
                         // if(!alpha.monochromatic){
-                        vector<Spectrum> spectrums;
-
-                        int lambda = 0;
-                        if(!alpha.checkMonochromatic(lambda)){
-                            alpha.splitSpectrum(spectrums);
-                            alpha = spectrums[0];
-                            // printf("%d \n",lambda);
-                        }
                         
+                    
                         // if(monochromatic){
                         //     printf("Lambda: %d \n",lambda);
                         // }else{
@@ -510,6 +503,17 @@ void PhotonShootingTask::Run() {
                                                 BSDF_TRANSMISSION | BSDF_SPECULAR);
                         bool hasNonSpecular = (photonBSDF->NumComponents() >
                                                photonBSDF->NumComponents(specularType));
+                        
+                        bool hasTransmission = (photonBSDF->NumComponents(BxDFType(BSDF_ALL_TRANSMISSION))>0);
+                        if(hasTransmission){
+                            vector<Spectrum> spectrums;
+                                if(!alpha.monochromatic){
+                                    alpha.splitSpectrum(spectrums);
+                                    alpha = spectrums[2];
+                                    // printf("%d \n",alpha.lambda);
+                            }
+                        }
+
                         Vector wo = -photonRay.d;
                         if (hasNonSpecular) {
                             // Deposit photon at surface
