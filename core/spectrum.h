@@ -365,8 +365,9 @@ public:
         XYZToRGB(xyz, rgb);
     }
 
-    void splitSpectrum(vector<SampledSpectrum>* spectrums);
-
+    void splitSpectrum(vector<SampledSpectrum>& spectrums);
+    bool checkMonochromatic(int &lambda);
+    
     RGBSpectrum ToRGBSpectrum() const;
     static SampledSpectrum FromRGB(const float rgb[3],
         SpectrumType type = SPECTRUM_REFLECTANCE);
@@ -377,8 +378,8 @@ public:
         return FromRGB(rgb, type);
     }
     SampledSpectrum(const RGBSpectrum &r, SpectrumType type = SPECTRUM_REFLECTANCE);
-    // bool monochromatic;
-    // int lambda;
+    bool monochromatic;
+    int lambda;
 private:
     // SampledSpectrum Private Data
     static SampledSpectrum X, Y, Z;
@@ -463,9 +464,10 @@ public:
         return FromXYZ(xyz);
     }
 
-    void splitSpectrum(vector<RGBSpectrum>* spectrums);
-    // int lambda;
-    // bool monochromatic;
+    void splitSpectrum(vector<RGBSpectrum>& spectrums);
+    bool checkMonochromatic(int &lambda);
+    int lambda;
+    bool monochromatic;
 };
 
 

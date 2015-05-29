@@ -487,11 +487,22 @@ void PhotonShootingTask::Run() {
                         
                         //Split the spectum 
                         // if(!alpha.monochromatic){
-                            // vector<Spectrum> spectrums;
-                            // alpha.splitSpectrum(&spectrums);
-                            // alpha = spectrums[1];
+                        vector<Spectrum> spectrums;
+
+                        int lambda = 0;
+                        if(!alpha.checkMonochromatic(lambda)){
+                            alpha.splitSpectrum(spectrums);
+                            alpha = spectrums[0];
+                            // printf("%d \n",lambda);
+                        }
+                        
+                        // if(monochromatic){
+                        //     printf("Lambda: %d \n",lambda);
                         // }else{
-                            // printf("Lambda: %d\n",alpha.lambda);
+                        //     printf("False\n");
+                        // }
+                        // }else{
+                        // printf("Lambda: %d\n",alpha.lambda);
                         // }
 
                         BSDF *photonBSDF = photonIsect.GetBSDF(photonRay, arena);

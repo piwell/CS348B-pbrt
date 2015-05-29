@@ -147,18 +147,25 @@ Spectrum SpecularReflection::Sample_f(const Vector &wo,
 Spectrum SpecularTransmission::Sample_f(const Vector &wo,
         Vector *wi, float u1, float u2, float *pdf, Spectrum* alpha) const {
     // Figure out which $\eta$ is incident and which is transmitted
-    if(alpha->monochromatic){
+    
         // printf("Lambda: %d\n",alpha->lambda);
-    }
+    // }
+
     bool entering = CosTheta(wo) > 0.;
     float ei = etai, et = etat;
-
+    
+    int lambda = 0;
+    if(alpha != NULL && alpha->checkMonochromatic(lambda)){
     //For dispersion
-    // float B = 1.4580;
-    // float C = 0.00354;
-    // int lambda = alpha->lambda; 
-
-    // et = B + C/pow(lambda,2);
+        // printf("old et: %f ",et);
+        float B = 1.4580;
+        float C = 0.00354;
+        // float B = 3.5f;
+        // float C = 0.5;
+        float l = lambda/1000.f;
+        et = B + C/pow(l,2);
+        // printf("et: %f \n",et);
+    }
 
     if (!entering)
         swap(ei, et);
