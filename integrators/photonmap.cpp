@@ -520,40 +520,33 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     float pdf;
                     BxDFType flags;
 
-                    // for(uint32_t i=0; i<spectrums.size(); ++i){
-                    // alpha = spectrums[i]
-                    alpha = spectrums[0];
+                    for(uint32_t i=0; i<spectrums.size(); ++i){
+                        alpha = spectrums[i];
+                        // alpha = spectrums[0];
 
-                    Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(rng),
-                                                       &pdf, BSDF_ALL, &flags, &alpha);
+                        Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(rng),
+                                                           &pdf, BSDF_ALL, &flags, &alpha);
 
+                        if (fr.IsBlack() || pdf == 0.f) return;
+                        Spectrum anew = alpha * fr *
+                            AbsDot(wi, photonBSDF->dgShading.nn) / pdf;
 
+                        // Possibly terminate photon path with Russian roulette
+                        float continueProb = min(1.f, anew.y() / alpha.y());
+                        if (rng.RandomFloat() > continueProb)
+                            return;
 
-                    if (fr.IsBlack() || pdf == 0.f) return;
-                    Spectrum anew = alpha * fr *
-                        AbsDot(wi, photonBSDF->dgShading.nn) / pdf;
-
-                    // Possibly terminate photon path with Russian roulette
-                    float continueProb = min(1.f, anew.y() / alpha.y());
-                    if (rng.RandomFloat() > continueProb)
-                        return;
-
-                    alpha = anew / continueProb;
-                    specularPath &= ((flags & BSDF_SPECULAR) != 0);
-                    
-                    if (indirectDone && !specularPath) return;
-                    photonRay = RayDifferential(photonIsect.dg.p, wi, photonRay,
-                                                photonIsect.rayEpsilon);
-                    followPhoton(photonRay, photonIsect, alpha, nIntersections, specularPath,
-                        localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
-                        causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
-                // }
-
-                // followPhoton(RayDifferential photonRay, Intersection photonIsect, Spectrum alpha, int nIntersections, bool specularPath,
-        // vector<Photon>& localDirectPhotons, vector<Photon>& localIndirectPhotons, vector<Photon>& localCausticPhotons,
-        // vector<Photon>& localVolumePhotons, vector<RadiancePhoton>& localRadiancePhotons,
-        // bool& causticDone, bool& indirectDone, bool& volumeDone, int& totalPaths,
-        // MemoryArena* arena, RNG* rng)
+                        
+                        alpha = anew / continueProb;
+                        specularPath &= ((flags & BSDF_SPECULAR) != 0);
+                        
+                        if (indirectDone && !specularPath) return;
+                        photonRay = RayDifferential(photonIsect.dg.p, wi, photonRay,
+                                                    photonIsect.rayEpsilon);
+                        followPhoton(photonRay, photonIsect, alpha, nIntersections, specularPath,
+                            localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
+                            causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
+                    }
         }
 
 
