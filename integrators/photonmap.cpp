@@ -520,6 +520,10 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     float pdf;
                     BxDFType flags;
 
+                    // for(uint32_t i=0; i<spectrums.size(); ++i){
+                    // alpha = spectrums[i]
+                    alpha = spectrums[0];
+
                     Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(rng),
                                                        &pdf, BSDF_ALL, &flags, &alpha);
 
@@ -534,9 +538,6 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     if (rng.RandomFloat() > continueProb)
                         return;
 
-                    // for(uint32_t i=0; i<spectrums.size(); ++i){
-                    // alpha = spectrums[i]
-                    alpha = spectrums[0];
                     alpha = anew / continueProb;
                     specularPath &= ((flags & BSDF_SPECULAR) != 0);
                     
