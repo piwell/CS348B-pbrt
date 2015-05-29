@@ -153,11 +153,12 @@ Spectrum SpecularTransmission::Sample_f(const Vector &wo,
     bool entering = CosTheta(wo) > 0.;
     float ei = etai, et = etat;
 
-    float B = 1.4580;
-    float C = 0.00354;
-    int lambda = alpha->lambda; 
+    //For dispersion
+    // float B = 1.4580;
+    // float C = 0.00354;
+    // int lambda = alpha->lambda; 
 
-    et = B + C/pow(lambda,2);
+    // et = B + C/pow(lambda,2);
 
     if (!entering)
         swap(ei, et);

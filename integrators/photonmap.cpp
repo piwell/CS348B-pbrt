@@ -257,7 +257,7 @@ PhotonIntegrator::~PhotonIntegrator() {
     delete causticMap;
     delete indirectMap;
     delete radianceMap;
-    //delete volumeMap;
+    delete volumeMap;
 }
 
 
@@ -484,13 +484,15 @@ void PhotonShootingTask::Run() {
 
                         // Handle photon/surface intersection
                         alpha *= renderer->Transmittance(scene, photonRay, NULL, rng, arena);
-                        if(!alpha.monochromatic){
-                            vector<Spectrum> spectrums;
-                            alpha.splitSpectrum(&spectrums);
-                            alpha = spectrums[1];
-                        }else{
-                            printf("Lambda: %d\n",alpha.lambda);
-                        }
+                        
+                        //Split the spectum 
+                        // if(!alpha.monochromatic){
+                            // vector<Spectrum> spectrums;
+                            // alpha.splitSpectrum(&spectrums);
+                            // alpha = spectrums[1];
+                        // }else{
+                            // printf("Lambda: %d\n",alpha.lambda);
+                        // }
 
                         BSDF *photonBSDF = photonIsect.GetBSDF(photonRay, arena);
                         BxDFType specularType = BxDFType(BSDF_REFLECTION |
