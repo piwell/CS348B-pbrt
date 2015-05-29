@@ -1,6 +1,6 @@
 Film "image"
  "integer xresolution" [300] "integer yresolution" [300]
-  "string filename" "scene.exr" 
+  "string filename" "scene.png" 
 
 Sampler "lowdiscrepancy" "integer pixelsamples" [8]
 PixelFilter "gaussian"
