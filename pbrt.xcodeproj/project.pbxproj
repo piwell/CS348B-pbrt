@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0360D4141B1A67780060687F /* photonvolume.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0360D4121B1A67780060687F /* photonvolume.cpp */; };
+		0360D4171B1A67860060687F /* realistic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0360D4151B1A67860060687F /* realistic.cpp */; };
 		B130248E1236EE5100206AC7 /* fileutil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B130248C1236EE5100206AC7 /* fileutil.cpp */; };
 		B13B5765161245F5008FFA44 /* targa.c in Sources */ = {isa = PBXBuildFile; fileRef = B13B5763161245F5008FFA44 /* targa.c */; };
 		B19397BB12083210008317C5 /* shinymetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B19397B912083210008317C5 /* shinymetal.cpp */; };
@@ -168,6 +170,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0360D4121B1A67780060687F /* photonvolume.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = photonvolume.cpp; sourceTree = "<group>"; };
+		0360D4131B1A67780060687F /* photonvolume.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = photonvolume.h; sourceTree = "<group>"; };
+		0360D4151B1A67860060687F /* realistic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = realistic.cpp; sourceTree = "<group>"; };
+		0360D4161B1A67860060687F /* realistic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = realistic.h; sourceTree = "<group>"; };
 		B130248C1236EE5100206AC7 /* fileutil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fileutil.cpp; sourceTree = "<group>"; };
 		B130248D1236EE5100206AC7 /* fileutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fileutil.h; sourceTree = "<group>"; };
 		B13B5763161245F5008FFA44 /* targa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = targa.c; sourceTree = "<group>"; };
@@ -482,6 +488,8 @@
 		B1D8EB5D117030E500A8A49E /* cameras */ = {
 			isa = PBXGroup;
 			children = (
+				0360D4151B1A67860060687F /* realistic.cpp */,
+				0360D4161B1A67860060687F /* realistic.h */,
 				B1D8EB5E117030E500A8A49E /* environment.cpp */,
 				B1D8EB5F117030E500A8A49E /* environment.h */,
 				B1D8EB60117030E500A8A49E /* orthographic.cpp */,
@@ -609,6 +617,8 @@
 		B1D8EBE71170310E00A8A49E /* integrators */ = {
 			isa = PBXGroup;
 			children = (
+				0360D4121B1A67780060687F /* photonvolume.cpp */,
+				0360D4131B1A67780060687F /* photonvolume.h */,
 				B1D8EBE81170310E00A8A49E /* ambientocclusion.cpp */,
 				B1D8EBE91170310E00A8A49E /* ambientocclusion.h */,
 				B1D8EBEA1170310E00A8A49E /* diffuseprt.cpp */,
@@ -926,6 +936,7 @@
 				B1D8EC891170310E00A8A49E /* igi.cpp in Sources */,
 				B1D8EC8A1170310E00A8A49E /* irradiancecache.cpp in Sources */,
 				B1D8EC8B1170310E00A8A49E /* path.cpp in Sources */,
+				0360D4171B1A67860060687F /* realistic.cpp in Sources */,
 				B1D8EC8C1170310E00A8A49E /* photonmap.cpp in Sources */,
 				B1D8EC8D1170310E00A8A49E /* single.cpp in Sources */,
 				B1D8EC8E1170310E00A8A49E /* useprobes.cpp in Sources */,
@@ -980,6 +991,7 @@
 				B1D8ECC01170310E00A8A49E /* marble.cpp in Sources */,
 				B1D8ECC11170310E00A8A49E /* mix.cpp in Sources */,
 				B1D8ECC21170310E00A8A49E /* scale.cpp in Sources */,
+				0360D4141B1A67780060687F /* photonvolume.cpp in Sources */,
 				B1D8ECC31170310E00A8A49E /* uv.cpp in Sources */,
 				B1D8ECC41170310E00A8A49E /* windy.cpp in Sources */,
 				B1D8ECC51170310E00A8A49E /* wrinkled.cpp in Sources */,
@@ -1011,7 +1023,7 @@
 				);
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = pbrt;
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx10.10;
 			};
 			name = Debug;
 		};
@@ -1028,7 +1040,7 @@
 				);
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = pbrt;
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx10.10;
 			};
 			name = Release;
 		};
@@ -1100,7 +1112,7 @@
 				);
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = pbrt;
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx10.10;
 			};
 			name = dtrace;
 		};
