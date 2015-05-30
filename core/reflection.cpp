@@ -153,12 +153,10 @@ Spectrum SpecularTransmission::Sample_f(const Vector &wo,
 
     bool entering = CosTheta(wo) > 0.;
     float ei = etai, et = etat;
-    
-    if(alpha != NULL && alpha->monochromatic){
+    int lambda;
+    if(alpha != NULL && (lambda = alpha->extractLambda())>0){
     //For dispersion
         // printf("old et: %f ",et);
-        int lambda = 0;
-        alpha->checkMonochromatic(lambda);
         float B = 1.4580;
         float C = 0.0040;
         // float B = 3.5f;

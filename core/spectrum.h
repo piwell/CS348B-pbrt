@@ -250,8 +250,35 @@ public:
             if (fscanf(f, "%f ", &c[i]) != 1) return false;
         return true;
     }
+    void splitSpectrum(vector<CoefficientSpectrum>& spectrums){
+        float spectralStep = (sampledLambdaEnd-sampledLambdaStart)/(float)(nSamples-1);
+        for(int i=0; i < nSamples; ++i){
+            CoefficientSpectrum spec(0.f);
+            spec.c[i] = c[i];
+            // spec.monochromatic = true;
+            spec.lambda = sampledLambdaStart+i*spectralStep;
+            // printf("Lambda func: %d, i: %d, c: %f\n",spec.lambda, i, spec.c[i]);
+            if(!spec.IsBlack())
+              spectrums.push_back(spec);
+        }
+    }
 
-bool monochromatic;
+    int extractLambda(){
+        bool first = true;
+        int l = -1;
+        int spectralStep = (sampledLambdaEnd-sampledLambdaStart)/(nSamples-1);
+        for(int i=0; i<nSamples; ++i){
+            if(c[i]>0.f && !first)
+              return -1;
+            if(c[i]>0.f && first){
+              l = sampledLambdaStart+i*spectralStep;
+              first = false;
+            }
+          }
+          return l;
+    }
+
+// bool monochromatic;  
 int lambda;
 protected:
     // CoefficientSpectrum Protected Data
@@ -264,13 +291,14 @@ public:
     // SampledSpectrum Public Methods
     SampledSpectrum(float v = 0.f) {
         for (int i = 0; i < nSpectralSamples; ++i) c[i] = v;
-            int l=0;
-            monochromatic = checkMonochromatic(l);
+            // monochromatic = false;
+            lambda = -1;
     }
     SampledSpectrum(const CoefficientSpectrum<nSpectralSamples> &v)
         : CoefficientSpectrum<nSpectralSamples>(v) { 
-        int l=0;
-        monochromatic = checkMonochromatic(l);
+        lambda = extractLambda();
+        // monochromatic = (lambda>0)?true:false;
+
         }
     static SampledSpectrum FromSampled(const float *lambda,
                                        const float *v, int n) {
@@ -290,6 +318,9 @@ public:
                                  sampledLambdaStart, sampledLambdaEnd);
             r.c[i] = AverageSpectrumSamples(lambda, v, n, lambda0, lambda1);
         }
+
+        r.lambda = r.extractLambda();
+        // r.monochromatic = (r.lambda>0)?true:false;
         return r;
     }
     static void Init() {
@@ -383,10 +414,10 @@ public:
     SampledSpectrum(const RGBSpectrum &r, SpectrumType type = SPECTRUM_REFLECTANCE);
 
     void splitSpectrum(vector<SampledSpectrum>& spectrums);
-    bool checkMonochromatic(int& l);
+    // bool checkMonochromatic(int& l);
 
-    bool monochromatic;
-    int lambda;
+    // bool monochromatic;
+    // int lambda;
 private:
     // SampledSpectrum Private Data
     static SampledSpectrum X, Y, Z;
@@ -406,18 +437,18 @@ class RGBSpectrum : public CoefficientSpectrum<3> {
 public:
     // RGBSpectrum Public Methods
     RGBSpectrum(float v = 0.f) : CoefficientSpectrum<3>(v) {
-        int l=0;
-        monochromatic = checkMonochromatic(l);
+        // monochromatic = false;
+        lambda = -1;
     }
     RGBSpectrum(const CoefficientSpectrum<3> &v)
         : CoefficientSpectrum<3>(v) { 
-            int l=0;
-        monochromatic = checkMonochromatic(l);
+        lambda = extractLambda();
+        // monochromatic = (lambda>0)?true:false;
         }
     RGBSpectrum(const RGBSpectrum &s, SpectrumType type = SPECTRUM_REFLECTANCE) {
         *this = s;
-        int l=0;
-        monochromatic = checkMonochromatic(l);
+        lambda = extractLambda();
+        // monochromatic = (lambda>0)?true:false;
     }
     static RGBSpectrum FromRGB(const float rgb[3],
             SpectrumType type = SPECTRUM_REFLECTANCE) {
@@ -475,10 +506,10 @@ public:
     }
 
     void splitSpectrum(vector<RGBSpectrum>& spectrums);
-    bool checkMonochromatic(int& l);
+    // bool checkMonochromatic(int& l);
 
-    int lambda;
-    bool monochromatic;
+    // int lambda;
+    // bool monochromatic;
 };
 
 

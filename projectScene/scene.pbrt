@@ -8,8 +8,8 @@ PixelFilter "gaussian"
 SurfaceIntegrator "photonmap" "integer nused" [300] "bool finalgather" ["true"]
   "integer finalgathersamples" [64]
   "float maxdist" [ .25] "integer indirectphotons" [0]
-  "integer causticphotons" [500000]
-  "integer volumephotons"  [0]
+  "integer causticphotons" [5000]
+  "integer volumephotons"  [5000]
 
 VolumeIntegrator "photonvolume" "float stepsize" [.15] "integer nused" [50] "float maxdist" [0.5]
 
@@ -36,12 +36,12 @@ AttributeEnd
 AttributeBegin
 Material "glass" #"color Kd" [.07 .07 .07]
 Translate 0 2 0
-# Shape "sphere" "float radius" [.6]
+Shape "sphere" "float radius" [.6]
 
-Rotate 90 0 1 0
-Rotate 45 1 0 0
-Scale 0.5 0.5 0.5
-Include "obj/prism.pbrt"
+# Rotate 90 0 1 0
+# Rotate 45 1 0 0
+# Scale 0.5 0.5 0.5
+# Include "obj/prism.pbrt"
 
 AttributeEnd
 
