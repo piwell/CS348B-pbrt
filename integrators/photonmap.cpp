@@ -66,7 +66,7 @@ public:
         vector<Photon>& localDirectPhotons, vector<Photon>& localIndirectPhotons, vector<Photon>& localCausticPhotons,
         vector<Photon>& localVolumePhotons, vector<RadiancePhoton>& localRadiancePhotons,
         bool& causticDone, bool& indirectDone, bool& volumeDone,
-        MemoryArena& arena, RNG& rng,
+        MemoryArena* arena, RNG* rng,
         vector<Spectrum>& localRpReflectances, vector<Spectrum>& localRpTransmittances);
 
     int taskNum;
@@ -369,7 +369,7 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
         vector<Photon>& localDirectPhotons, vector<Photon>& localIndirectPhotons, vector<Photon>& localCausticPhotons,
         vector<Photon>& localVolumePhotons, vector<RadiancePhoton>& localRadiancePhotons,
         bool& causticDone, bool& indirectDone, bool& volumeDone,
-        MemoryArena& arena, RNG& rng,
+        MemoryArena* arena, RNG* rng,
         vector<Spectrum>& localRpReflectances, vector<Spectrum>& localRpTransmittances){
         
         if (scene->Intersect(photonRay, &photonIsect)) {
@@ -383,12 +383,12 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
             if (!scene->volumeRegion->IntersectP(rn, &t0, &t1)) {/*printf("failure to volumize!\n");*/t0 = 1.0; t1 = 0.0;} //no volumes were intersected by ray
             //else printf("Didn't fail\n");
                 Spectrum tau(0.);
-                t0 += rng.RandomFloat() * integrator->stepSize; //I am always stopping myself from typing "RootBeerFloat()"
+                t0 += rng->RandomFloat() * integrator->stepSize; //I am always stopping myself from typing "RootBeerFloat()"
                 float t_i = t0;
 
 
                 // //march through the volume and find the pdf of where the event will occur
-                float xi = rng.RandomFloat();
+                float xi = rng->RandomFloat();
                 bool interaction = false;
                 
                 while (t0 < t1) {
@@ -396,7 +396,7 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     //printf("1-exp(-blau) = %f\n",exp(-tau.y()));
                     //if (xi > ( exp(-tau.y()) )) //use the Y in XYZ (luminance) as a termination quantity
                     RayDifferential shortRay(photonRay.o, rn.d, t_i, t0);
-                    Spectrum tr = renderer->Transmittance(scene, shortRay, NULL, rng, arena);
+                    Spectrum tr = renderer->Transmittance(scene, shortRay, NULL, *rng, *arena);
                     //scene->Transmittance(shortRay);
                     if (xi > tr.y()){
                         interaction = true;
@@ -411,7 +411,7 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     //figure out if it's absorbed or scattered
                     Spectrum sig_s = scene->volumeRegion->sigma_s(interactPt, rn.d, rn.time);
                     Spectrum sig_a = scene->volumeRegion->sigma_a(interactPt, rn.d, rn.time);
-                    bool scatter = (rng.RandomFloat() > (sig_s.y())/(sig_a.y()+sig_s.y()));
+                    bool scatter = (rng->RandomFloat() > (sig_s.y())/(sig_a.y()+sig_s.y()));
                     
                     //if it's absorbed, terminate with extreme prejudice
                     if (!scatter){
@@ -423,16 +423,19 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     if (scatter && !volumeDone){
                         //if nIntersections>1, store. Else: discard, it will be accounted for in the volume integrator in direct lighting single scattering.
                         if (nIntersections>1){
-                             Photon photon(interactPt, alpha, rn.d);
+                            Photon photon(interactPt, alpha, rn.d);
+                            { MutexLock lock(mutex);
                              localVolumePhotons.push_back(photon);
+                            }
+                             // volumePhotons.push_back(photon);
                         }else{
                             integrator->nVolumePaths++;
                         }
 
 
                         // get a uniform sphere direction sample
-                        float u1 = rng.RandomFloat();
-                        float u2 = rng.RandomFloat();
+                        float u1 = rng->RandomFloat();
+                        float u2 = rng->RandomFloat();
                         Vector direction = UniformSampleSphere(u1,u2);
                         float pdf = UniformSpherePdf();
                         
@@ -457,8 +460,8 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
 
                 vector<Spectrum> spectrums;
                 // Handle photon/surface intersection
-                alpha *= renderer->Transmittance(scene, photonRay, NULL, rng, arena);
-                BSDF *photonBSDF = photonIsect.GetBSDF(photonRay, arena);
+                alpha *= renderer->Transmittance(scene, photonRay, NULL, *rng, *arena);
+                BSDF *photonBSDF = photonIsect.GetBSDF(photonRay, *arena);
                 BxDFType specularType = BxDFType(BSDF_REFLECTION |
                                         BSDF_TRANSMISSION | BSDF_SPECULAR);
                 bool hasNonSpecular = (photonBSDF->NumComponents() >
@@ -473,6 +476,7 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                 }
 
                 Vector wo = -photonRay.d;
+                { MutexLock lock(mutex);
                 if (hasNonSpecular) {
                     // Deposit photon at surface
                     Photon photon(photonIsect.dg.p, alpha, wo);
@@ -503,15 +507,16 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
 
                     // Possibly create radiance photon at photon intersection point
                     if (depositedPhoton && integrator->finalGather &&
-                            rng.RandomFloat() < .125f) {
+                            rng->RandomFloat() < .125f) {
                         Normal n = photonIsect.dg.nn;
                         n = Faceforward(n, -photonRay.d);
                         localRadiancePhotons.push_back(RadiancePhoton(photonIsect.dg.p, n));
-                        Spectrum rho_r = photonBSDF->rho(rng, BSDF_ALL_REFLECTION);
+                        Spectrum rho_r = photonBSDF->rho(*rng, BSDF_ALL_REFLECTION);
                         localRpReflectances.push_back(rho_r);
-                        Spectrum rho_t = photonBSDF->rho(rng, BSDF_ALL_TRANSMISSION);
+                        Spectrum rho_t = photonBSDF->rho(*rng, BSDF_ALL_TRANSMISSION);
                         localRpTransmittances.push_back(rho_t);
                     }
+                }
                 }
                 if (nIntersections >= integrator->maxPhotonDepth) return;
 
@@ -524,7 +529,7 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                         alpha = spectrums[i];
                         // alpha = spectrums[0];
 
-                        Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(rng),
+                        Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(*rng),
                                                            &pdf, BSDF_ALL, &flags, &alpha);
 
                         if (fr.IsBlack() || pdf == 0.f) return;
@@ -533,7 +538,7 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
 
                         // Possibly terminate photon path with Russian roulette
                         float continueProb = min(1.f, anew.y() / alpha.y());
-                        if (rng.RandomFloat() > continueProb)
+                        if (rng->RandomFloat() > continueProb)
                             return;
 
                         
@@ -595,7 +600,7 @@ void PhotonShootingTask::Run() {
                 int nIntersections = 0;
                 followPhoton(photonRay, photonIsect, alpha, nIntersections, specularPath,
                     localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
-                    causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
+                    causticDone, indirectDone, volumeDone, &arena, &rng, rpReflectances, rpTransmittances);
                 
                 // while (scene->Intersect(photonRay, &photonIsect)) {
                 //     ++nIntersections;
@@ -811,9 +816,11 @@ void PhotonShootingTask::Run() {
 
         // Merge direct, caustic, and radiance photons into shared array
         if (!causticDone) {
+            // printf("%d %d \n",localCausticPhotons.size(), causticPhotons.size());
             integrator->nCausticPaths += blockSize;
-            for (uint32_t i = 0; i < localCausticPhotons.size(); ++i)
+            for (uint32_t i = 0; i < localCausticPhotons.size(); ++i){
                 causticPhotons.push_back(localCausticPhotons[i]);
+            }
             localCausticPhotons.erase(localCausticPhotons.begin(), localCausticPhotons.end());
             if (causticPhotons.size() >= integrator->nCausticPhotonsWanted)
                 causticDone = true;

@@ -263,8 +263,8 @@ class SampledSpectrum : public CoefficientSpectrum<nSpectralSamples> {
 public:
     // SampledSpectrum Public Methods
     SampledSpectrum(float v = 0.f) {
-        monochromatic = checkMonochromatic();
         for (int i = 0; i < nSpectralSamples; ++i) c[i] = v;
+            monochromatic = checkMonochromatic();
     }
     SampledSpectrum(const CoefficientSpectrum<nSpectralSamples> &v)
         : CoefficientSpectrum<nSpectralSamples>(v) { 
