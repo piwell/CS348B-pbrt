@@ -264,11 +264,13 @@ public:
     // SampledSpectrum Public Methods
     SampledSpectrum(float v = 0.f) {
         for (int i = 0; i < nSpectralSamples; ++i) c[i] = v;
-            monochromatic = checkMonochromatic();
+            int l=0;
+            monochromatic = checkMonochromatic(l);
     }
     SampledSpectrum(const CoefficientSpectrum<nSpectralSamples> &v)
         : CoefficientSpectrum<nSpectralSamples>(v) { 
-        monochromatic = checkMonochromatic();
+        int l=0;
+        monochromatic = checkMonochromatic(l);
         }
     static SampledSpectrum FromSampled(const float *lambda,
                                        const float *v, int n) {
@@ -381,7 +383,7 @@ public:
     SampledSpectrum(const RGBSpectrum &r, SpectrumType type = SPECTRUM_REFLECTANCE);
 
     void splitSpectrum(vector<SampledSpectrum>& spectrums);
-    bool checkMonochromatic();
+    bool checkMonochromatic(int& l);
 
     bool monochromatic;
     int lambda;
@@ -404,15 +406,18 @@ class RGBSpectrum : public CoefficientSpectrum<3> {
 public:
     // RGBSpectrum Public Methods
     RGBSpectrum(float v = 0.f) : CoefficientSpectrum<3>(v) {
-        monochromatic = checkMonochromatic();;
+        int l=0;
+        monochromatic = checkMonochromatic(l);
     }
     RGBSpectrum(const CoefficientSpectrum<3> &v)
         : CoefficientSpectrum<3>(v) { 
-        monochromatic = checkMonochromatic();
+            int l=0;
+        monochromatic = checkMonochromatic(l);
         }
     RGBSpectrum(const RGBSpectrum &s, SpectrumType type = SPECTRUM_REFLECTANCE) {
         *this = s;
-        monochromatic = checkMonochromatic();
+        int l=0;
+        monochromatic = checkMonochromatic(l);
     }
     static RGBSpectrum FromRGB(const float rgb[3],
             SpectrumType type = SPECTRUM_REFLECTANCE) {
@@ -470,7 +475,7 @@ public:
     }
 
     void splitSpectrum(vector<RGBSpectrum>& spectrums);
-    bool checkMonochromatic();
+    bool checkMonochromatic(int& l);
 
     int lambda;
     bool monochromatic;

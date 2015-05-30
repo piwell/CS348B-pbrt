@@ -98,24 +98,28 @@ RGBSpectrum SampledSpectrum::ToRGBSpectrum() const {
 }
 
 void SampledSpectrum::splitSpectrum(vector<SampledSpectrum>& spectrums){
-    int spectralStep = (sampledLambdaEnd-sampledLambdaStart)/nSpectralSamples;
-    for(int i=0; i< 30; ++i){
-        SampledSpectrum spec(0);
+    float spectralStep = (sampledLambdaEnd-sampledLambdaStart)/(float)(nSpectralSamples-1);
+    for(int i=0; i < nSpectralSamples; ++i){
+        SampledSpectrum spec(0.f);
         spec.c[i] = c[i];
         spec.monochromatic = true;
         spec.lambda = sampledLambdaStart+i*spectralStep;
-        // printf("Lambda func: %d, i: %d\n",lambda, i);
-        spectrums.push_back(spec);
+        // printf("Lambda func: %d, i: %d, c: %f\n",spec.lambda, i, spec.c[i]);
+        if(!spec.IsBlack())
+          spectrums.push_back(spec);
     }
 }
 
-bool SampledSpectrum::checkMonochromatic(){
-  bool first = false;
-  for(int i=0; i<=nSpectralSamples; ++i){
-    if(c[i]>0.f && first == true)
+bool SampledSpectrum::checkMonochromatic(int& l){
+  bool first = true;
+  float spectralStep = (sampledLambdaEnd-sampledLambdaStart)/(float)(nSpectralSamples-1);
+  for(int i=0; i< nSpectralSamples; ++i){
+    if(c[i]>0.f && !first)
       return false;
-    if(c[i]>0.f && first == false)
-      first = true;
+    if(c[i]>0.f && first){
+      l = sampledLambdaStart+i*spectralStep;
+      first = false;
+    }
   }
   return true;
 }
@@ -127,17 +131,21 @@ void RGBSpectrum::splitSpectrum(vector<RGBSpectrum>& spectrums){
       spec.c[i] = c[i];
       spec.monochromatic = true;
       spec.lambda = sampledLambdaStart+i*spectralStep;
-      spectrums.push_back(spec);
+      if(!spec.IsBlack())
+        spectrums.push_back(spec);
   }
 }
 
-bool RGBSpectrum::checkMonochromatic(){
-  bool first = false;
+bool RGBSpectrum::checkMonochromatic(int& l){
+  bool first = true;
+  int spectralStep = (sampledLambdaEnd-sampledLambdaStart)/2;
   for(int i=0; i<3; ++i){
-    if(c[i]>0.f && first == true)
+    if(c[i]>0.f && !first)
       return false;
-    if(c[i]>0.f && first == false)
-      first = true;
+    if(c[i]>0.f && first){
+      l = sampledLambdaStart+i*spectralStep;
+      first = false;
+    }
   }
   return true;
 }

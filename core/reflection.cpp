@@ -157,11 +157,14 @@ Spectrum SpecularTransmission::Sample_f(const Vector &wo,
     if(alpha != NULL && alpha->monochromatic){
     //For dispersion
         // printf("old et: %f ",et);
+        int lambda = 0;
+        alpha->checkMonochromatic(lambda);
         float B = 1.4580;
         float C = 0.0040;
         // float B = 3.5f;
         // float C = 0.5;
-        float l = alpha->lambda/1000.f;
+        // printf("%d %d \n",lambda, alpha->lambda);
+        float l = lambda/1000.f;
         et = B + C/pow(l,2);
         // printf("et: %f \n",et);
     }

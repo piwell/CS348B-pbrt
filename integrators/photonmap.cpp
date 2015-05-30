@@ -460,7 +460,9 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
 
                 vector<Spectrum> spectrums;
                 // Handle photon/surface intersection
+                // printf("%d ",alpha.monochromatic);
                 alpha *= renderer->Transmittance(scene, photonRay, NULL, *rng, *arena);
+                // printf("%d ",alpha.monochromatic);
                 BSDF *photonBSDF = photonIsect.GetBSDF(photonRay, *arena);
                 BxDFType specularType = BxDFType(BSDF_REFLECTION |
                                         BSDF_TRANSMISSION | BSDF_SPECULAR);
@@ -470,7 +472,6 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                 bool hasTransmission = (photonBSDF->NumComponents(BxDFType(BSDF_ALL_TRANSMISSION))>0);
                 if(hasTransmission && !alpha.monochromatic){
                     alpha.splitSpectrum(spectrums);
-                    // alpha = spectrums[2];
                 }else{
                     spectrums.push_back(alpha);
                 }
@@ -524,11 +525,10 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     Vector wi;
                     float pdf;
                     BxDFType flags;
-
+                    // printf("%d \n",spectrums.size());
                     for(uint32_t i=0; i<spectrums.size(); ++i){
                         alpha = spectrums[i];
-                        // alpha = spectrums[0];
-
+                        
                         Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(*rng),
                                                            &pdf, BSDF_ALL, &flags, &alpha);
 
