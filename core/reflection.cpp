@@ -155,15 +155,20 @@ Spectrum SpecularTransmission::Sample_f(const Vector &wo,
     float ei = etai, et = etat;
     int lambda;
     if(alpha != NULL && (lambda = alpha->extractLambda())>0){
-    //For dispersion
-        // printf("old et: %f ",et);
-        float B = 1.4580;
-        float C = 0.0040;
-        // float B = 3.5f;
-        // float C = 0.5;
-        // printf("%d %d \n",lambda, alpha->lambda);
+        //For dispersion        
+        //Chauchy's equation and V-number
+        //(shuld be done for both ei and et)
+        //from http://www.luxrender.net/forum/viewtopic.php?t=8891
+
         float l = lambda/1000.f;
-        et = B + C/pow(l,2);
+
+        // float Vd = 64.17;
+        float Vd = 0.8f;
+        float nd = 1.1f;
+
+        float B = ((nd-1)/Vd)*0.52345;
+        float A = nd -(B/0.34522792);
+        et = A + B/pow(l,2);
         // printf("et: %f \n",et);
     }
 
