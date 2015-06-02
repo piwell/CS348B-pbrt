@@ -40,13 +40,14 @@
 #include "pbrt.h"
 #include "renderer.h"
 #include "parallel.h"
+#include "photonshooter.h"
 
 // SamplerRenderer Declarations
 class SamplerRenderer : public Renderer {
 public:
     // SamplerRenderer Public Methods
     SamplerRenderer(Sampler *s, Camera *c, SurfaceIntegrator *si,
-                    VolumeIntegrator *vi, bool visIds);
+                    VolumeIntegrator *vi, bool visIds, PhotonShooter *ps = NULL);
     ~SamplerRenderer();
     void Render(const Scene *scene);
     Spectrum Li(const Scene *scene, const RayDifferential &ray,
@@ -62,6 +63,7 @@ private:
     
     VolumeIntegrator *volumeIntegrator;
     SurfaceIntegrator *surfaceIntegrator;
+    PhotonShooter *photonShooter;
 };
 
 

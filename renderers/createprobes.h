@@ -40,6 +40,8 @@
 #include "pbrt.h"
 #include "renderer.h"
 #include "geometry.h"
+#include "photonshooter.h"
+
 
 // CreateRadianceProbes Declarations
 class CreateRadianceProbes : public Renderer {
@@ -48,7 +50,7 @@ public:
     CreateRadianceProbes(SurfaceIntegrator *surf, VolumeIntegrator *vol,
         const Camera *camera, int lmax, float probeSpacing, const BBox &bbox,
         int nIndirSamples, bool includeDirect, bool includeIndirect,
-        float time, const string &filename);
+        float time, const string &filename, PhotonShooter *phs = NULL);
     ~CreateRadianceProbes();
     void Render(const Scene *scene);
     Spectrum Li(const Scene *scene, const RayDifferential &ray,
@@ -60,6 +62,7 @@ private:
     // CreateRadianceProbes Private Data
     SurfaceIntegrator *surfaceIntegrator;
     VolumeIntegrator *volumeIntegrator;
+    PhotonShooter *photonShooter;
     const Camera *camera;
     int lmax, nIndirSamples;
     BBox bbox;
@@ -70,6 +73,6 @@ private:
 
 
 CreateRadianceProbes *CreateRadianceProbesRenderer(const Camera *camera,
-    SurfaceIntegrator *surf, VolumeIntegrator *vol, const ParamSet &params);
+    SurfaceIntegrator *surf, VolumeIntegrator *vol, const ParamSet &params, PhotonShooter *phs = NULL);
 
 #endif // PBRT_RENDERERS_CREATEPROBES_H

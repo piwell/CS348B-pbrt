@@ -168,12 +168,13 @@ void SamplerRendererTask::Run() {
 // SamplerRenderer Method Definitions
 SamplerRenderer::SamplerRenderer(Sampler *s, Camera *c,
                                  SurfaceIntegrator *si, VolumeIntegrator *vi,
-                                 bool visIds) {
+                                 bool visIds, PhotonShooter *ps) {
     sampler = s;
     camera = c;
     surfaceIntegrator = si;
     volumeIntegrator = vi;
     visualizeObjectIds = visIds;
+    photonShooter = ps;
 }
 
 
@@ -182,6 +183,7 @@ SamplerRenderer::~SamplerRenderer() {
     delete camera;
     delete surfaceIntegrator;
     delete volumeIntegrator;
+    delete photonShooter;
 }
 
 
@@ -189,6 +191,7 @@ void SamplerRenderer::Render(const Scene *scene) {
     PBRT_FINISHED_PARSING();
     // Allow integrators to do preprocessing for the scene
     PBRT_STARTED_PREPROCESSING();
+    if(photonShooter != NULL) photonShooter->Preprocess(scene, camera, this);
     surfaceIntegrator->Preprocess(scene, camera, this);
     volumeIntegrator->Preprocess(scene, camera, this);
     PBRT_FINISHED_PREPROCESSING();

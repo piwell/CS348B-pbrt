@@ -16,7 +16,6 @@ VolumeIntegrator "photonvolume" "float stepsize" [.15] "integer nused" [50] "flo
 
 Rotate 5 1 0 0 
 Camera "perspective" "float fov" [70]
-# VolumeIntegrator "single" "float stepsize" [.5]
 
 WorldBegin
 

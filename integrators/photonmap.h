@@ -43,81 +43,20 @@
 #include "volume.h"
 #include "scene.h"
 #include "montecarlo.h"
-
-struct Photon {
-    Photon(const Point &pp, const Spectrum &wt, const Vector &w)
-        : p(pp), alpha(wt), wi(w) { }
-    Photon() { }
-    Point p;
-    Spectrum alpha;
-    Vector wi;
-};
-
-
-struct RadiancePhoton {
-    RadiancePhoton(const Point &pp, const Normal &nn)
-        : p(pp), n(nn), Lo(0.f) { }
-    RadiancePhoton() { }
-    Point p;
-    Normal n;
-    Spectrum Lo;
-};
-
-
-struct ClosePhoton {
-    // ClosePhoton Public Methods
-    ClosePhoton(const Photon *p = NULL, float md2 = INFINITY)
-        : photon(p), distanceSquared(md2) { }
-    bool operator<(const ClosePhoton &p2) const {
-        return distanceSquared == p2.distanceSquared ?
-            (photon < p2.photon) : (distanceSquared < p2.distanceSquared);
-    }
-    const Photon *photon;
-    float distanceSquared;
-};
-
-
-struct PhotonProcess {
-    // PhotonProcess Public Methods
-    PhotonProcess(uint32_t mp, ClosePhoton *buf);
-    void operator()(const Point &p, const Photon &photon, float dist2,
-                    float &maxDistSquared);
-    ClosePhoton *photons;
-    uint32_t nLookup, nFound;
-};
-
-
-struct RadiancePhotonProcess {
-    // RadiancePhotonProcess Methods
-    RadiancePhotonProcess(const Normal &nn)
-        :  n(nn) {
-        photon = NULL;
-    }
-    void operator()(const Point &p, const RadiancePhoton &rp,
-                    float distSquared, float &maxDistSquared) {
-        if (Dot(rp.n, n) > 0) {
-            photon = &rp;
-            maxDistSquared = distSquared;
-        }
-    }
-    const Normal &n;
-    const RadiancePhoton *photon;
-};
-
+#include "photonshooter.h"
 
 // PhotonIntegrator Declarations
 class PhotonIntegrator : public SurfaceIntegrator {
 public:
     // PhotonIntegrator Public Methods
-    PhotonIntegrator(int ncaus, int nindir, int nvol, float steps, int nLookup, int maxspecdepth,
-        int maxphotondepth, float maxdist, bool finalGather, int gatherSamples,
-        float ga);
+    PhotonIntegrator(int nLookup, int maxspecdepth, float maxdist, bool finalGather,
+     int gatherSamples, float ga, PhotonShooter* psh = NULL);
     ~PhotonIntegrator();
     Spectrum Li(const Scene *scene, const Renderer *renderer,
         const RayDifferential &ray, const Intersection &isect, const Sample *sample,
         RNG &rng, MemoryArena &arena) const;
     void RequestSamples(Sampler *sampler, Sample *sample, const Scene *scene);
-    void Preprocess(const Scene *scene, const Camera *camera, const Renderer *renderer);
+    // void Preprocess(const Scene *scene, const Camera *camera, const Renderer *renderer);
 
     uint32_t nVolumePhotonsWanted;
     KdTree<Photon> *volumeMap;
@@ -140,13 +79,10 @@ private:
     LightSampleOffsets *lightSampleOffsets;
     BSDFSampleOffsets *bsdfSampleOffsets;
     BSDFSampleOffsets bsdfGatherSampleOffsets, indirGatherSampleOffsets;
-    int nCausticPaths, nIndirectPaths, nVolumePaths;
-    KdTree<Photon> *causticMap;
-    KdTree<Photon> *indirectMap;
-    KdTree<RadiancePhoton> *radianceMap;
+    PhotonShooter* photonShooter;
 };
 
 
-PhotonIntegrator *CreatePhotonMapSurfaceIntegrator(const ParamSet &params);
+PhotonIntegrator *CreatePhotonMapSurfaceIntegrator(const ParamSet &params, PhotonShooter* psh = NULL);
 
 #endif // PBRT_INTEGRATORS_PHOTONMAP_H

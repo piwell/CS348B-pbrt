@@ -137,7 +137,6 @@ using std::map;
 
 // API Global Variables
 Options PbrtOptions;
-PhotonIntegrator* photonmap = NULL;
 // API Local Classes
 #define MAX_TRANSFORMS 2
 #define START_TRANSFORM_BITS (1 << 0)
@@ -535,7 +534,7 @@ VolumeRegion *MakeVolumeRegion(const string &name,
 
 
 SurfaceIntegrator *MakeSurfaceIntegrator(const string &name,
-        const ParamSet &paramSet) {
+        const ParamSet &paramSet, PhotonShooter* psh=NULL) {
     SurfaceIntegrator *si = NULL;
     if (name == "whitted")
         si = CreateWhittedSurfaceIntegrator(paramSet);
@@ -543,10 +542,8 @@ SurfaceIntegrator *MakeSurfaceIntegrator(const string &name,
         si = CreateDirectLightingIntegrator(paramSet);
     else if (name == "path")
         si = CreatePathSurfaceIntegrator(paramSet);
-    else if (name == "photonmap" || name == "exphotonmap"){
-        photonmap = CreatePhotonMapSurfaceIntegrator(paramSet);
-        si = photonmap;
-    }
+    else if (name == "photonmap" || name == "exphotonmap")
+        si = CreatePhotonMapSurfaceIntegrator(paramSet, psh);
     else if (name == "irradiancecache")
         si = CreateIrradianceCacheIntegrator(paramSet);
     else if (name == "igi")
@@ -570,17 +567,14 @@ SurfaceIntegrator *MakeSurfaceIntegrator(const string &name,
 
 
 VolumeIntegrator *MakeVolumeIntegrator(const string &name,
-        const ParamSet &paramSet) {
+        const ParamSet &paramSet, PhotonShooter* psh=NULL) {
     VolumeIntegrator *vi = NULL;
     if (name == "single")
         vi = CreateSingleScatteringIntegrator(paramSet);
     else if (name == "emission")
         vi = CreateEmissionVolumeIntegrator(paramSet);
      else if (name == "photonvolume"){
-        if(photonmap == NULL){
-            printf("Photonvolume needs photonmap as si\n");
-        }
-        vi = CreatePhotonVolumeIntegrator(paramSet,photonmap);
+        vi = CreatePhotonVolumeIntegrator(paramSet,psh);
     }
     else
         Warning("Volume integrator \"%s\" unknown.", name.c_str());
@@ -1224,6 +1218,14 @@ Scene *RenderOptions::MakeScene() {
 Renderer *RenderOptions::MakeRenderer() const {
     Renderer *renderer = NULL;
     Camera *camera = MakeCamera();
+
+    PhotonShooter *photonshooter = NULL;
+    if( SurfIntegratorName == "photonmap"   ||
+        SurfIntegratorName == "exphotonmap" ||
+        VolIntegratorName  == "photonvolume") {
+        photonshooter = CreatePhotonShooter(SurfIntegratorParams);
+    }
+
     if (RendererName == "metropolis") {
         renderer = CreateMetropolisRenderer(RendererParams, camera);
         RendererParams.ReportUnused();
@@ -1236,12 +1238,12 @@ Renderer *RenderOptions::MakeRenderer() const {
     else if (RendererName == "createprobes") {
         // Create surface and volume integrators
         SurfaceIntegrator *surfaceIntegrator = MakeSurfaceIntegrator(SurfIntegratorName,
-            SurfIntegratorParams);
+            SurfIntegratorParams,photonshooter);
         if (!surfaceIntegrator) Severe("Unable to create surface integrator.");
         VolumeIntegrator *volumeIntegrator = MakeVolumeIntegrator(VolIntegratorName,
-            VolIntegratorParams);
+            VolIntegratorParams,photonshooter);
         if (!volumeIntegrator) Severe("Unable to create volume integrator.");
-        renderer = CreateRadianceProbesRenderer(camera, surfaceIntegrator, volumeIntegrator, RendererParams);
+        renderer = CreateRadianceProbesRenderer(camera, surfaceIntegrator, volumeIntegrator, RendererParams, photonshooter);
         RendererParams.ReportUnused();
         // Warn if no light sources are defined
         if (lights.size() == 0)
@@ -1267,13 +1269,13 @@ Renderer *RenderOptions::MakeRenderer() const {
         if (!sampler) Severe("Unable to create sampler.");
         // Create surface and volume integrators
         SurfaceIntegrator *surfaceIntegrator = MakeSurfaceIntegrator(SurfIntegratorName,
-            SurfIntegratorParams);
+            SurfIntegratorParams,photonshooter);
         if (!surfaceIntegrator) Severe("Unable to create surface integrator.");
         VolumeIntegrator *volumeIntegrator = MakeVolumeIntegrator(VolIntegratorName,
-            VolIntegratorParams);
+            VolIntegratorParams,photonshooter);
         if (!volumeIntegrator) Severe("Unable to create volume integrator.");
         renderer = new SamplerRenderer(sampler, camera, surfaceIntegrator,
-                                       volumeIntegrator, visIds);
+                                       volumeIntegrator, visIds, photonshooter);
         // Warn if no light sources are defined
         if (lights.size() == 0)
             Warning("No light sources defined in scene; "

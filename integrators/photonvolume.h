@@ -14,9 +14,9 @@
 class PhotonVolumeIntegrator : public VolumeIntegrator{
 public:
 	// PhotonVolumeIntegrator Public Methods
-	PhotonVolumeIntegrator(float ss, int nu, float md, const PhotonIntegrator* pm){
+	PhotonVolumeIntegrator(float ss, int nu, float md, PhotonShooter* psh = NULL){
 		stepSize=ss; nUsed =nu;  maxDist = md; maxDistSquared =md*md;
-		photonmap = pm;
+		photonShooter = psh;
 	}
     Spectrum Transmittance(const Scene *, const Renderer *,
         const RayDifferential &ray, const Sample *sample, RNG &rng,
@@ -32,9 +32,9 @@ private:
 
 	float stepSize, maxDist, maxDistSquared;
 	int tauSampleOffset, scatterSampleOffset, nUsed;
-	const PhotonIntegrator* photonmap;
+	PhotonShooter* photonShooter;
 };
 
-PhotonVolumeIntegrator *CreatePhotonVolumeIntegrator(const ParamSet &params, const PhotonIntegrator* pm);
+PhotonVolumeIntegrator *CreatePhotonVolumeIntegrator(const ParamSet &params, PhotonShooter* psh = NULL);
 
 #endif //  PBRT_INTEGRATORS_PHOTONVOLUME_H

@@ -76,7 +76,7 @@ private:
 // CreateRadianceProbes Method Definitions
 CreateRadianceProbes::CreateRadianceProbes(SurfaceIntegrator *surf,
         VolumeIntegrator *vol, const Camera *cam, int lm, float ps, const BBox &b,
-        int nindir, bool id, bool ii, float t, const string &fn) {
+        int nindir, bool id, bool ii, float t, const string &fn, PhotonShooter *phs) {
     lmax = lm;
     probeSpacing = ps;
     bbox = b;
@@ -87,6 +87,7 @@ CreateRadianceProbes::CreateRadianceProbes(SurfaceIntegrator *surf,
     nIndirSamples = nindir;
     surfaceIntegrator = surf;
     volumeIntegrator = vol;
+    photonShooter = phs;
     camera = cam;
 }
 
@@ -129,6 +130,7 @@ void CreateRadianceProbes::Render(const Scene *scene) {
     // Compute scene bounds and initialize probe integrators
     if (bbox.pMin.x > bbox.pMax.x)
         bbox = scene->WorldBound();
+    if(photonShooter != NULL) photonShooter->Preprocess(scene, camera, this);
     surfaceIntegrator->Preprocess(scene, camera, this);
     volumeIntegrator->Preprocess(scene, camera, this);
     Sample *origSample = new Sample(NULL, surfaceIntegrator, volumeIntegrator,
@@ -333,7 +335,7 @@ void CreateRadProbeTask::Run() {
 
 CreateRadianceProbes *CreateRadianceProbesRenderer(const Camera *camera,
         SurfaceIntegrator *surf, VolumeIntegrator *vol,
-        const ParamSet &params) {
+        const ParamSet &params, PhotonShooter *phs) {
     bool includeDirect = params.FindOneBool("directlighting", true);
     bool includeIndirect = params.FindOneBool("indirectlighting", true);
     int lmax = params.FindOneInt("lmax", 4);
@@ -350,7 +352,7 @@ CreateRadianceProbes *CreateRadianceProbesRenderer(const Camera *camera,
     string filename = params.FindOneFilename("filename", "probes.out");
 
     return new CreateRadianceProbes(surf, vol, camera, lmax, probeSpacing,
-        bounds, nindir, includeDirect, includeIndirect, time, filename);
+        bounds, nindir, includeDirect, includeIndirect, time, filename, phs);
 }
 
 

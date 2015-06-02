@@ -76,9 +76,9 @@ Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, Close
  Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer,
         const RayDifferential &ray, const Sample *sample, RNG &rng,
         Spectrum *T, MemoryArena &arena) const {
+ 	
  	VolumeRegion *vr = scene->volumeRegion;
-
- 	KdTree<Photon>* volumeMap = photonmap->volumeMap; 
+ 	KdTree<Photon>* volumeMap = photonShooter->volumeMap; 
 
  	float t0, t1;
  	if (!vr || !vr->IntersectP(ray, &t0, &t1) || (t1-t0) == 0.f){
@@ -177,9 +177,9 @@ Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, Close
 	return Lv;
 }
 
-PhotonVolumeIntegrator *CreatePhotonVolumeIntegrator(const ParamSet &params, const PhotonIntegrator* pm){
+PhotonVolumeIntegrator *CreatePhotonVolumeIntegrator(const ParamSet &params, PhotonShooter* phs){
 	float stepSize  = params.FindOneFloat("stepsize", 1.f);
 	int nUsed  = params.FindOneInt("nused", 250);
 	float maxDist = params.FindOneFloat("maxdist", 0.1f);
-	return new PhotonVolumeIntegrator(stepSize, nUsed, maxDist, pm);
+	return new PhotonVolumeIntegrator(stepSize, nUsed, maxDist, phs);
 }
