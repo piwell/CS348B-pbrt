@@ -47,7 +47,7 @@
 
 // PhotonIntegrator Declarations
 class PhotonIntegrator : public SurfaceIntegrator {
-public:
+public: 
     // PhotonIntegrator Public Methods
     PhotonIntegrator(int nLookup, int maxspecdepth, float maxdist, bool finalGather,
      int gatherSamples, float ga, PhotonShooter* psh = NULL);
