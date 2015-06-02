@@ -407,7 +407,7 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                 
                 if (interaction){
                 //     //printf("Interaction! Not human interaction, obviously, but interaction nonetheless!\n");
-                     Point interactPt = rn(t0);
+                    Point interactPt = rn(t0);
                     //figure out if it's absorbed or scattered
                     Spectrum sig_s = scene->volumeRegion->sigma_s(interactPt, rn.d, rn.time);
                     Spectrum sig_a = scene->volumeRegion->sigma_a(interactPt, rn.d, rn.time);
@@ -451,8 +451,8 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                         
                         photonRay = RayDifferential(interactPt, direction,0);
                         followPhoton(photonRay, photonIsect, alpha, nIntersections, specularPath,
-                        localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
-                        causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
+                                     localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
+                                     causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
                     }
                 }
                 //--------------------------------------------------------------------
@@ -477,83 +477,86 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
 
                 Vector wo = -photonRay.d;
                 { MutexLock lock(mutex);
-                if (hasNonSpecular) {
-                    // Deposit photon at surface
-                    Photon photon(photonIsect.dg.p, alpha, wo);
-                    bool depositedPhoton = false;
-                    if (specularPath && nIntersections > 1) {
-                        if (!causticDone) {
-                            PBRT_PHOTON_MAP_DEPOSITED_CAUSTIC_PHOTON(&photonIsect.dg, &alpha, &wo);
-                            depositedPhoton = true;
-                            localCausticPhotons.push_back(photon);
+                    if (hasNonSpecular) {
+                        // Deposit photon at surface
+                        Photon photon(photonIsect.dg.p, alpha, wo);
+                        bool depositedPhoton = false;
+                        if (specularPath && nIntersections > 1) {
+                            if (!causticDone) {
+                                PBRT_PHOTON_MAP_DEPOSITED_CAUSTIC_PHOTON(&photonIsect.dg, &alpha, &wo);
+                                depositedPhoton = true;
+                                localCausticPhotons.push_back(photon);
+                            }
                         }
-                    }
-                    else {
-                        // Deposit either direct or indirect photon
-                        // stop depositing direct photons once indirectDone is true; don't
-                        // want to waste memory storing too many if we're going a long time
-                        // trying to get enough caustic photons desposited.
-                        if (nIntersections == 1 && !indirectDone && integrator->finalGather) {
-                            PBRT_PHOTON_MAP_DEPOSITED_DIRECT_PHOTON(&photonIsect.dg, &alpha, &wo);
-                            depositedPhoton = true;
-                            localDirectPhotons.push_back(photon);
+                        else {
+                            // Deposit either direct or indirect photon
+                            // stop depositing direct photons once indirectDone is true; don't
+                            // want to waste memory storing too many if we're going a long time
+                            // trying to get enough caustic photons desposited.
+                            if (nIntersections == 1 && !indirectDone && integrator->finalGather) {
+                                PBRT_PHOTON_MAP_DEPOSITED_DIRECT_PHOTON(&photonIsect.dg, &alpha, &wo);
+                                depositedPhoton = true;
+                                localDirectPhotons.push_back(photon);
+                            }
+                            else if (nIntersections > 1 && !indirectDone) {
+                                PBRT_PHOTON_MAP_DEPOSITED_INDIRECT_PHOTON(&photonIsect.dg, &alpha, &wo);
+                                depositedPhoton = true;
+                                localIndirectPhotons.push_back(photon);
+                            }
                         }
-                        else if (nIntersections > 1 && !indirectDone) {
-                            PBRT_PHOTON_MAP_DEPOSITED_INDIRECT_PHOTON(&photonIsect.dg, &alpha, &wo);
-                            depositedPhoton = true;
-                            localIndirectPhotons.push_back(photon);
-                        }
-                    }
 
-                    // Possibly create radiance photon at photon intersection point
-                    if (depositedPhoton && integrator->finalGather &&
-                            rng->RandomFloat() < .125f) {
-                        Normal n = photonIsect.dg.nn;
-                        n = Faceforward(n, -photonRay.d);
-                        localRadiancePhotons.push_back(RadiancePhoton(photonIsect.dg.p, n));
-                        Spectrum rho_r = photonBSDF->rho(*rng, BSDF_ALL_REFLECTION);
-                        localRpReflectances.push_back(rho_r);
-                        Spectrum rho_t = photonBSDF->rho(*rng, BSDF_ALL_TRANSMISSION);
-                        localRpTransmittances.push_back(rho_t);
+                        // Possibly create radiance photon at photon intersection point
+                        if (depositedPhoton && integrator->finalGather &&
+                                rng->RandomFloat() < .125f) {
+                            Normal n = photonIsect.dg.nn;
+                            n = Faceforward(n, -photonRay.d);
+                            localRadiancePhotons.push_back(RadiancePhoton(photonIsect.dg.p, n));
+                            Spectrum rho_r = photonBSDF->rho(*rng, BSDF_ALL_REFLECTION);
+                            localRpReflectances.push_back(rho_r);
+                            Spectrum rho_t = photonBSDF->rho(*rng, BSDF_ALL_TRANSMISSION);
+                            localRpTransmittances.push_back(rho_t);
+                        }
                     }
-                }
-                }
-                if (nIntersections >= integrator->maxPhotonDepth) return;
+                }//Mutex lock
+
+                if (nIntersections >= integrator->maxPhotonDepth) 
+                    return;
 
                 // Sample new photon ray direction
-                    Vector wi;
-                    float pdf;
-                    BxDFType flags;
-                    // printf("%d \n",spectrums.size());
-                    for(uint32_t i=0; i<spectrums.size(); ++i){
-                        alpha = spectrums[i];
-                        
-                        Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(*rng),
-                                                           &pdf, BSDF_ALL, &flags, &alpha);
+                Vector wi;
+                float pdf;
+                BxDFType flags;
+                // printf("%d \n",spectrums.size());
+                for(uint32_t i=0; i<spectrums.size(); ++i){
+                    alpha = spectrums[i];
+                    
+                    Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(*rng),
+                                                       &pdf, BSDF_ALL, &flags, &alpha);
 
-                        if (fr.IsBlack() || pdf == 0.f) return;
-                        Spectrum anew = alpha * fr *
-                            AbsDot(wi, photonBSDF->dgShading.nn) / pdf;
+                    if (fr.IsBlack() || pdf == 0.f) 
+                        continue;
 
-                        // Possibly terminate photon path with Russian roulette
-                        float continueProb = min(1.f, anew.y() / alpha.y());
-                        if (rng->RandomFloat() > continueProb)
-                            return;
+                    Spectrum anew = alpha * fr *
+                        AbsDot(wi, photonBSDF->dgShading.nn) / pdf;
 
-                        
-                        alpha = anew / continueProb;
-                        specularPath &= ((flags & BSDF_SPECULAR) != 0);
-                        
-                        if (indirectDone && !specularPath) return;
-                        photonRay = RayDifferential(photonIsect.dg.p, wi, photonRay,
-                                                    photonIsect.rayEpsilon);
-                        followPhoton(photonRay, photonIsect, alpha, nIntersections, specularPath,
-                            localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
-                            causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
-                    }
+                    // Possibly terminate photon path with Russian roulette
+                    float continueProb = min(1.f, anew.y() / alpha.y());
+                    if (rng->RandomFloat() > continueProb)
+                        continue;
+
+                    alpha = anew / continueProb;
+                    specularPath &= ((flags & BSDF_SPECULAR) != 0);
+                    
+                    if (indirectDone && !specularPath) 
+                        continue;
+
+                    photonRay = RayDifferential(photonIsect.dg.p, wi, photonRay,
+                                                photonIsect.rayEpsilon);
+                    followPhoton(photonRay, photonIsect, alpha, nIntersections, specularPath,
+                        localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
+                        causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
+                }
         }
-
-
     }
 
 
@@ -589,7 +592,8 @@ void PhotonShootingTask::Run() {
             Normal Nl;
             Spectrum Le = light->Sample_L(scene, ls, u[4], u[5],
                                           time, &photonRay, &Nl, &pdf);
-            if (pdf == 0.f || Le.IsBlack()) continue;
+            if (pdf == 0.f || Le.IsBlack()) 
+                continue;
             Spectrum alpha = (AbsDot(Nl, photonRay.d) * Le) / (pdf * lightPdf);
             if (!alpha.IsBlack()) {
                 // Follow photon path through scene and record intersections
@@ -601,173 +605,7 @@ void PhotonShootingTask::Run() {
                     localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
                     causticDone, indirectDone, volumeDone, &arena, &rng, rpReflectances, rpTransmittances);
                 
-                // while (scene->Intersect(photonRay, &photonIsect)) {
-                //     ++nIntersections;
-
-
-                //     //---------------------------------------------------------------------
-                //     //figure out where the volume is in the current photon's path
-                //     float t0, t1;
-                //     float length = photonRay.d.Length();
-                //     if (length == 0.f) break;  //shouldn't happen
-                //     Ray rn(photonRay.o, photonRay.d / length, photonRay.mint * length, photonRay.maxt * length);
-                //     if (!scene->volumeRegion->IntersectP(rn, &t0, &t1)) {/*printf("failure to volumize!\n");*/t0 = 1.0; t1 = 0.0;} //no volumes were intersected by ray
-                //     //else printf("Didn't fail\n");
-                //         Spectrum tau(0.);
-                //         t0 += rng.RandomFloat() * integrator->stepSize; //I am always stopping myself from typing "RootBeerFloat()"
-                //         float t_i = t0;
-
-
-                //         // //march through the volume and find the pdf of where the event will occur
-                //         float xi = rng.RandomFloat();
-                //         bool interaction = false;
-                        
-                //         while (t0 < t1) {
-                //             //tau += scene->volumeRegion->sigma_t(rn(t0), rn.d*integrator->stepSize,rn.time);
-                //             //printf("1-exp(-blau) = %f\n",exp(-tau.y()));
-                //             //if (xi > ( exp(-tau.y()) )) //use the Y in XYZ (luminance) as a termination quantity
-                //             RayDifferential shortRay(photonRay.o, rn.d, t_i, t0);
-                //             Spectrum tr = renderer->Transmittance(scene, shortRay, NULL, rng, arena);
-                //             //scene->Transmittance(shortRay);
-                //             if (xi > tr.y()){
-                //                 interaction = true;
-                //                 break;
-                //             }
-                //             t0 += integrator->stepSize;
-                //         }
-                        
-                //         if (interaction){
-                //         //     //printf("Interaction! Not human interaction, obviously, but interaction nonetheless!\n");
-                //              Point interactPt = rn(t0);
-                //             //figure out if it's absorbed or scattered
-                //             Spectrum sig_s = scene->volumeRegion->sigma_s(interactPt, rn.d, rn.time);
-                //             Spectrum sig_a = scene->volumeRegion->sigma_a(interactPt, rn.d, rn.time);
-                //             bool scatter = (rng.RandomFloat() > (sig_s.y())/(sig_a.y()+sig_s.y()));
-                            
-                //             //if it's absorbed, terminate with extreme prejudice
-                //             if (!scatter){
-                //                  //store the photon? no
-                //                  break;
-                //             }
-                            
-                //             //if it's scattered, importance sample the phase function and multiply it by the phase function and change its direction
-                //             if (scatter && !volumeDone){
-                //                 //if nIntersections>1, store. Else: discard, it will be accounted for in the volume integrator in direct lighting single scattering.
-                //                 if (nIntersections>1){
-                //                      Photon photon(interactPt, alpha, rn.d);
-                //                      localVolumePhotons.push_back(photon);
-                //                 }else{
-                //                     integrator->nVolumePaths++;
-                //                 }
-
-
-                //                 // get a uniform sphere direction sample
-                //                 float u1 = rng.RandomFloat();
-                //                 float u2 = rng.RandomFloat();
-                //                 Vector direction = UniformSampleSphere(u1,u2);
-                //                 float pdf = UniformSpherePdf();
-                                
-                //                 //check out what the phase function thinks of your new direction
-                //                 Spectrum ref = scene->volumeRegion->p(interactPt,rn.d,direction,rn.time);
-
-                //                 //make a new ray for the photon; continue outer loop.
-                //                 if (ref.IsBlack() || pdf == 0.f)
-                //                     break;
-                //                 alpha *= ref;
-                //                 alpha /= pdf;
-                                
-                                
-                //                 photonRay = RayDifferential(interactPt, direction,0);
-                //                 continue;
-                //             }
-                //         }
-                //         //--------------------------------------------------------------------
-
-
-                //         // Handle photon/surface intersection
-                //         alpha *= renderer->Transmittance(scene, photonRay, NULL, rng, arena);
-                //         BSDF *photonBSDF = photonIsect.GetBSDF(photonRay, arena);
-                //         BxDFType specularType = BxDFType(BSDF_REFLECTION |
-                //                                 BSDF_TRANSMISSION | BSDF_SPECULAR);
-                //         bool hasNonSpecular = (photonBSDF->NumComponents() >
-                //                                photonBSDF->NumComponents(specularType));
-                        
-                //         bool hasTransmission = (photonBSDF->NumComponents(BxDFType(BSDF_ALL_TRANSMISSION))>0);
-                //         if(hasTransmission){
-                //             vector<Spectrum> spectrums;
-                //                 if(!alpha.monochromatic){
-                //                     alpha.splitSpectrum(spectrums);
-                //                     alpha = spectrums[2];
-                //             }else{
-                //                 spectrums.push_back(alpha);
-                //             }
-                //         }
-
-                //         Vector wo = -photonRay.d;
-                //         if (hasNonSpecular) {
-                //             // Deposit photon at surface
-                //             Photon photon(photonIsect.dg.p, alpha, wo);
-                //             bool depositedPhoton = false;
-                //             if (specularPath && nIntersections > 1) {
-                //                 if (!causticDone) {
-                //                     PBRT_PHOTON_MAP_DEPOSITED_CAUSTIC_PHOTON(&photonIsect.dg, &alpha, &wo);
-                //                     depositedPhoton = true;
-                //                     localCausticPhotons.push_back(photon);
-                //                 }
-                //             }
-                //             else {
-                //                 // Deposit either direct or indirect photon
-                //                 // stop depositing direct photons once indirectDone is true; don't
-                //                 // want to waste memory storing too many if we're going a long time
-                //                 // trying to get enough caustic photons desposited.
-                //                 if (nIntersections == 1 && !indirectDone && integrator->finalGather) {
-                //                     PBRT_PHOTON_MAP_DEPOSITED_DIRECT_PHOTON(&photonIsect.dg, &alpha, &wo);
-                //                     depositedPhoton = true;
-                //                     localDirectPhotons.push_back(photon);
-                //                 }
-                //                 else if (nIntersections > 1 && !indirectDone) {
-                //                     PBRT_PHOTON_MAP_DEPOSITED_INDIRECT_PHOTON(&photonIsect.dg, &alpha, &wo);
-                //                     depositedPhoton = true;
-                //                     localIndirectPhotons.push_back(photon);
-                //                 }
-                //             }
-
-                //             // Possibly create radiance photon at photon intersection point
-                //             if (depositedPhoton && integrator->finalGather &&
-                //                     rng.RandomFloat() < .125f) {
-                //                 Normal n = photonIsect.dg.nn;
-                //                 n = Faceforward(n, -photonRay.d);
-                //                 localRadiancePhotons.push_back(RadiancePhoton(photonIsect.dg.p, n));
-                //                 Spectrum rho_r = photonBSDF->rho(rng, BSDF_ALL_REFLECTION);
-                //                 localRpReflectances.push_back(rho_r);
-                //                 Spectrum rho_t = photonBSDF->rho(rng, BSDF_ALL_TRANSMISSION);
-                //                 localRpTransmittances.push_back(rho_t);
-                //             }
-                //         }
-                //         if (nIntersections >= integrator->maxPhotonDepth) break;
-
-                //         // Sample new photon ray direction
-                //         Vector wi;
-                //         float pdf;
-                //         BxDFType flags;
-        
-                //         Spectrum fr = photonBSDF->Sample_f(wo, &wi, BSDFSample(rng),
-                //                                            &pdf, BSDF_ALL, &flags, &alpha);
-                //         if (fr.IsBlack() || pdf == 0.f) break;
-                //         Spectrum anew = alpha * fr *
-                //             AbsDot(wi, photonBSDF->dgShading.nn) / pdf;
-
-                //         // Possibly terminate photon path with Russian roulette
-                //         float continueProb = min(1.f, anew.y() / alpha.y());
-                //         if (rng.RandomFloat() > continueProb)
-                //             break;
-                //         alpha = anew / continueProb;
-                //         specularPath &= ((flags & BSDF_SPECULAR) != 0);
-                        
-                //         if (indirectDone && !specularPath) break;
-                //         photonRay = RayDifferential(photonIsect.dg.p, wi, photonRay,
-                //                                     photonIsect.rayEpsilon);
-                // }
+                
                 PBRT_PHOTON_MAP_FINISHED_RAY_PATH(&photonRay, &alpha);
             }
             arena.FreeAll();
