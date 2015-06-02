@@ -329,7 +329,6 @@ void PhotonIntegrator::Preprocess(const Scene *scene,
     Mutex::Destroy(mutex);
     progress.Done();
 
-    // printf("Volume photons: %d, Custic photons: %d \n",volumePhotons.size(), causticPhotons.size());
     // Build kd-trees for indirect and caustic photons
     KdTree<Photon> *directMap = NULL;
     if (directPhotons.size() > 0)
@@ -374,16 +373,14 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
         
         if (scene->Intersect(photonRay, &photonIsect)) {
             ++nIntersections;
-            //---------------------------------------------------------------------
             //figure out where the volume is in the current photon's path
             float t0, t1;
             float length = photonRay.d.Length();
             if (length == 0.f) return;  //shouldn't happen
             Ray rn(photonRay.o, photonRay.d / length, photonRay.mint * length, photonRay.maxt * length);
-            if (!scene->volumeRegion->IntersectP(rn, &t0, &t1)) {/*printf("failure to volumize!\n");*/t0 = 1.0; t1 = 0.0;} //no volumes were intersected by ray
-            //else printf("Didn't fail\n");
+            if (!scene->volumeRegion->IntersectP(rn, &t0, &t1)) {/*printf("failure to volumize!\n");*/t0 = 1.0; t1 = 0.0;} 
                 Spectrum tau(0.);
-                t0 += rng->RandomFloat() * integrator->stepSize; //I am always stopping myself from typing "RootBeerFloat()"
+                t0 += rng->RandomFloat() * integrator->stepSize;
                 float t_i = t0;
 
 
@@ -392,9 +389,6 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                 bool interaction = false;
                 
                 while (t0 < t1) {
-                    //tau += scene->volumeRegion->sigma_t(rn(t0), rn.d*integrator->stepSize,rn.time);
-                    //printf("1-exp(-blau) = %f\n",exp(-tau.y()));
-                    //if (xi > ( exp(-tau.y()) )) //use the Y in XYZ (luminance) as a termination quantity
                     RayDifferential shortRay(photonRay.o, rn.d, t_i, t0);
                     Spectrum tr = renderer->Transmittance(scene, shortRay, NULL, *rng, *arena);
                     //scene->Transmittance(shortRay);
@@ -406,8 +400,9 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                 }
                 
                 if (interaction){
-                //     //printf("Interaction! Not human interaction, obviously, but interaction nonetheless!\n");
+                    //printf("Interaction! Not human interaction, obviously, but interaction nonetheless!\n");
                     Point interactPt = rn(t0);
+
                     //figure out if it's absorbed or scattered
                     Spectrum sig_s = scene->volumeRegion->sigma_s(interactPt, rn.d, rn.time);
                     Spectrum sig_a = scene->volumeRegion->sigma_a(interactPt, rn.d, rn.time);
@@ -415,7 +410,6 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     
                     //if it's absorbed, terminate with extreme prejudice
                     if (!scatter){
-                         //store the photon? no
                          return;
                     }
                     
@@ -455,12 +449,10 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                                      causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
                     }
                 }
-                //--------------------------------------------------------------------
 
 
                 vector<Spectrum> spectrums;
                 // Handle photon/surface intersection
-                // printf("%d ",alpha.monochromatic);
                 alpha *= renderer->Transmittance(scene, photonRay, NULL, *rng, *arena);
                 BSDF *photonBSDF = photonIsect.GetBSDF(photonRay, *arena);
                 BxDFType specularType = BxDFType(BSDF_REFLECTION |
@@ -523,10 +515,10 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
                     return;
 
                 // Sample new photon ray direction
+
                 Vector wi;
                 float pdf;
                 BxDFType flags;
-                // printf("%d \n",spectrums.size());
                 for(uint32_t i=0; i<spectrums.size(); ++i){
                     alpha = spectrums[i];
                     
@@ -562,7 +554,6 @@ void PhotonShootingTask::followPhoton(RayDifferential photonRay, Intersection ph
 
 void PhotonShootingTask::Run() {
     // Declare local variables for _PhotonShootingTask_
-    // printf("PhotonShootingTask\n");
     MemoryArena arena;
     RNG rng(31 * taskNum);
     vector<Photon> localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons;
@@ -604,8 +595,7 @@ void PhotonShootingTask::Run() {
                 followPhoton(photonRay, photonIsect, alpha, nIntersections, specularPath,
                     localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
                     causticDone, indirectDone, volumeDone, &arena, &rng, rpReflectances, rpTransmittances);
-                
-                
+
                 PBRT_PHOTON_MAP_FINISHED_RAY_PATH(&photonRay, &alpha);
             }
             arena.FreeAll();
@@ -653,7 +643,6 @@ void PhotonShootingTask::Run() {
 
         // Merge direct, caustic, and radiance photons into shared array
         if (!causticDone) {
-            // printf("%d %d \n",localCausticPhotons.size(), causticPhotons.size());
             integrator->nCausticPaths += blockSize;
             for (uint32_t i = 0; i < localCausticPhotons.size(); ++i){
                 causticPhotons.push_back(localCausticPhotons[i]);
@@ -667,9 +656,9 @@ void PhotonShootingTask::Run() {
             integrator->nVolumePaths += blockSize;
             for(uint32_t i = 0; i < localVolumePhotons.size(); ++i){
                 localVolumePhotons[i].alpha /= float(nshot);
+                // localVolumePhotons[i].alpha /= float(localVolumePhotons.size());
                 volumePhotons.push_back(localVolumePhotons[i]);
             }
-            // printf("Volume photons: %d \n", volumePhotons.size());
             localVolumePhotons.erase(localVolumePhotons.begin(), localVolumePhotons.end());
             if(volumePhotons.size() >= integrator->nVolumePhotonsWanted)
                 volumeDone = true;
