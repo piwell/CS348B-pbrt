@@ -45,11 +45,13 @@ class GlassMaterial : public Material {
 public:
     // GlassMaterial Public Methods
     GlassMaterial(Reference<Texture<Spectrum> > r, Reference<Texture<Spectrum> > t,
-            Reference<Texture<float> > i, Reference<Texture<float> > bump) {
+            Reference<Texture<float> > i, Reference<Texture<float> > bump,
+            float v=0.f) {
         Kr = r;
         Kt = t;
         index = i;
         bumpMap = bump;
+        Vn = v;
     }
     BSDF *GetBSDF(const DifferentialGeometry &dgGeom, const DifferentialGeometry &dgShading, MemoryArena &arena) const;
 private:
@@ -57,10 +59,11 @@ private:
     Reference<Texture<Spectrum> > Kr, Kt;
     Reference<Texture<float> > index;
     Reference<Texture<float> > bumpMap;
+    float Vn;
 };
 
 
 GlassMaterial *CreateGlassMaterial(const Transform &xform,
-        const TextureParams &mp);
+        const TextureParams &mpz);
 
 #endif // PBRT_MATERIALS_GLASS_H

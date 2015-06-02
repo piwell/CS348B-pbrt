@@ -45,7 +45,8 @@ BSDF *GlassMaterial::GetBSDF(const DifferentialGeometry &dgGeom, const Different
         Bump(bumpMap, dgGeom, dgShading, &dgs);
     else
         dgs = dgShading;
-    float ior = index->Evaluate(dgs);
+    float ior  = index->Evaluate(dgs);
+    // float vdor = 0.f;
     BSDF *bsdf = BSDF_ALLOC(arena, BSDF)(dgs, dgGeom.nn, ior);
     Spectrum R = Kr->Evaluate(dgs).Clamp();
     Spectrum T = Kt->Evaluate(dgs).Clamp();
@@ -53,7 +54,7 @@ BSDF *GlassMaterial::GetBSDF(const DifferentialGeometry &dgGeom, const Different
         bsdf->Add(BSDF_ALLOC(arena, SpecularReflection)(R,
             BSDF_ALLOC(arena, FresnelDielectric)(1., ior)));
     if (!T.IsBlack())
-        bsdf->Add(BSDF_ALLOC(arena, SpecularTransmission)(T, 1., ior));
+        bsdf->Add(BSDF_ALLOC(arena, SpecularTransmission)(T, 1., ior, Vn));
     return bsdf;
 }
 
@@ -63,8 +64,9 @@ GlassMaterial *CreateGlassMaterial(const Transform &xform,
     Reference<Texture<Spectrum> > Kr = mp.GetSpectrumTexture("Kr", Spectrum(1.f));
     Reference<Texture<Spectrum> > Kt = mp.GetSpectrumTexture("Kt", Spectrum(1.f));
     Reference<Texture<float> > index = mp.GetFloatTexture("index", 1.5f);
+    float Vn = mp.FindFloat("Vn",0.f);
     Reference<Texture<float> > bumpMap = mp.GetFloatTextureOrNull("bumpmap");
-    return new GlassMaterial(Kr, Kt, index, bumpMap);
+    return new GlassMaterial(Kr, Kt, index, bumpMap, Vn);
 }
 
 

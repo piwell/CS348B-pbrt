@@ -148,32 +148,28 @@ Spectrum SpecularTransmission::Sample_f(const Vector &wo,
         Vector *wi, float u1, float u2, float *pdf, Spectrum* alpha) const {
     // Figure out which $\eta$ is incident and which is transmitted
     
-        // printf("Lambda: %d\n",alpha->lambda);
-    // }
-
+    // printf("%f %f\n",Vn, etat);
     bool entering = CosTheta(wo) > 0.;
     float ei = etai, et = etat;
+
     int lambda;
-    if(alpha != NULL && (lambda = alpha->extractLambda())>0){
+    if(alpha != NULL && (lambda = alpha->extractLambda())>0 && Vn > 0.f){
         //For dispersion        
         //Chauchy's equation and V-number
-        //(shuld be done for both ei and et)
         //from http://www.luxrender.net/forum/viewtopic.php?t=8891
 
         float l = lambda/1000.f;
 
-        // float Vd = 64.17;
-        float Vd = 0.8f;
-        float nd = 1.1f;
-
-        float B = ((nd-1)/Vd)*0.52345;
-        float A = nd -(B/0.34522792);
+        float B = ((et-1)/Vn)*0.52345;
+        float A = et -(B/0.34522792);
         et = A + B/pow(l,2);
         // printf("et: %f \n",et);
     }
 
     if (!entering)
         swap(ei, et);
+
+
 
     // Compute transmitted ray direction
     float sini2 = SinTheta2(wo);

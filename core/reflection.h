@@ -328,12 +328,13 @@ private:
 class SpecularTransmission : public BxDF {
 public:
     // SpecularTransmission Public Methods
-    SpecularTransmission(const Spectrum &t, float ei, float et)
+    SpecularTransmission(const Spectrum &t, float ei, float et, float v=0.f)
         : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_SPECULAR)),
           fresnel(ei, et) {
         T = t;
         etai = ei;
         etat = et;
+        Vn = v;
     }
     Spectrum f(const Vector &, const Vector &) const {
         return Spectrum(0.);
@@ -346,6 +347,7 @@ private:
     // SpecularTransmission Private Data
     Spectrum T;
     float etai, etat;
+    float Vn;
     FresnelDielectric fresnel;
 };
 
