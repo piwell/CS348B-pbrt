@@ -123,8 +123,6 @@ bool TransformedPrimitive::IntersectP(const Ray &r) const {
     return primitive->IntersectP(WorldToPrimitive(r));
 }
 
-
-
 // GeometricPrimitive Method Definitions
 BBox GeometricPrimitive::WorldBound() const {
     return shape->WorldBound();

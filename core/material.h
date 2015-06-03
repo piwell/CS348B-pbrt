@@ -53,6 +53,7 @@ public:
         return NULL;
     }
     virtual ~Material();
+    virtual bool dispersive() const {return false;}
     static void Bump(const Reference<Texture<float> > &d, const DifferentialGeometry &dgGeom,
         const DifferentialGeometry &dgShading, DifferentialGeometry *dgBump);
 };
