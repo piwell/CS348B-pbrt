@@ -1,0 +1,54 @@
+Film "image" "string filename" "volume.png"
+ "integer xresolution" [300] "integer yresolution" [300]
+   
+
+Sampler "lowdiscrepancy" "integer pixelsamples" [1]
+PixelFilter "gaussian"
+
+SurfaceIntegrator "photonmap" "integer nused" [300] "bool finalgather" ["true"]
+  "integer finalgathersamples" [64]
+  "float maxdist" [ .15] "integer indirectphotons" [0]
+  "integer causticphotons" [5000]
+  "integer volumephotons"  [5000]
+
+VolumeIntegrator "photonvolume" "float stepsize" [.15] "integer nused" [50] "float maxdist" [0.5]
+
+
+Rotate 0 1 0 0
+Camera "perspective" "float fov" [70]
+# VolumeIntegrator "single" "float stepsize" [.5]
+
+WorldBegin
+
+Translate 0 -0.5 3.5
+
+Volume "homogeneous"
+  "color sigma_a" [.05 .05 .05 ]
+  "color sigma_s" [.1 .1 .1]
+  "point p0" [ -10 0 -5 ] "point p1" [ 5 5 5]
+
+AttributeBegin
+# LightSource "spot" "point from" [0 3 -5 ] "point to" [0 0 5 ]
+#   "color I" [1500 1500 1500 ] "float coneangle" [60]
+
+
+#Light source from scene_png.pbrt
+# LightSource "spot" "point from" [-3 6 0 ] "point to" [0 2 0 ]
+#   "color I" [2500 2500 2500 ] "float coneangle" [1]
+
+LightSource "distant" "point from" [0 3 0 ] "point to" [0 2 5 ]
+  "color L" [50 50 50 ]
+
+#LightSource "point" "color I" [1 1 1 ] "point from" [0 .95 0]
+AttributeEnd
+
+
+Material "matte" "color Kd" [.001 .001 .001 ]
+Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
+  "point P" [ -5 0 -5  5 0 -5  5 0 5  -5 0 5]
+Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
+  "point P" [ -5 0 3  5 0 3   5 10 3  -5 10 3 ]
+Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
+  "point P" [ 5 0 3   5 0 -3  5 10 -3  5 10 3]
+
+WorldEnd

@@ -28,6 +28,40 @@ Spectrum PhotonVolumeIntegrator::Transmittance(const Scene *scene,
     return Exp(-tau);
 }
 
+
+int counter = 0;
+float rainbowWavelength(const Vector &w, const Vector &wi){
+    //1. Calc wavelength depending on theta
+    
+    float cosTheta = Dot(wi, -w);
+    const float radToDeg = 57.2957;
+    float theta = radToDeg * acosf(cosTheta);
+    
+
+    //printf("%f\n", theta);
+    //printf("%f %f %f\n", p->wi.x, p->wi.y, p->wi.z);
+    
+    
+    //Water droplets modelled as spheres have produce a
+    //primary rainbow when angle between incoming and outgoing
+    //rays are [40.4, 42.3] degrees.
+    //If not in this range, don't contribute to total flux
+    const float minTheta = 40.4, minWavelength = 400.0;
+    const float maxTheta = 42.3, maxWavelength = 700.0;
+    
+    
+    if (theta < minTheta || maxTheta < theta){
+        return 0;
+    }
+    
+    const float thetaRange = maxTheta-minTheta;
+    const float wavelengthRange = maxWavelength-minWavelength;
+    
+    float wavelength = minWavelength + (theta-minTheta) * wavelengthRange / thetaRange;
+    
+    return wavelength;
+}
+
 Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, ClosePhoton *lookupBuf,
 		const Vector &w, const Point &pt, VolumeRegion *vr, float maxDistSquare, float t) const {
 
@@ -36,9 +70,8 @@ Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, Close
 
 	// Initialize _PhotonProcess_ object, _proc_, for photon map lookups
 	PhotonProcess proc(nLookup, lookupBuf);
-	proc.photons =
-	 	(ClosePhoton *)alloca(nLookup * sizeof(ClosePhoton));
-	// // Do photon map lookup
+	proc.photons = (ClosePhoton *)alloca(nLookup * sizeof(ClosePhoton));
+	// Do photon map lookup
 
 	map->Lookup(pt, proc, maxDistSquare);
 	// // Accumulate light from nearby photons
@@ -60,20 +93,23 @@ Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, Close
 
 	 	float distSq = photons[i].distanceSquared;
 	 	if (distSq>maxmd) maxmd = distSq;
-
-	 	totalFlux += p->alpha * vr->p(pt_i,p->wi,-w,t);
+        
+        totalFlux += p->alpha * vr->p(pt_i,p->wi,-w,t);
 	}
 	float distSq = maxmd;
 	float dV = distSq * sqrt(distSq);
 	Spectrum scale = vr->sigma_s(pt, w,t);
-	if (dV!=0.0 && scale!=0.0)
-	 	L += totalFlux/(4.0/3.0*M_PI*dV*scale);
+    if (dV!=0.0 && scale!=0.0){
+        L += totalFlux/(4.0/3.0*M_PI*dV*scale);
+    }
+    
 
 	return L;
 }
 
 
- Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer,
+
+Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer,
         const RayDifferential &ray, const Sample *sample, RNG &rng,
         Spectrum *T, MemoryArena &arena) const {
  	
@@ -157,11 +193,21 @@ Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, Close
  			if (!L.IsBlack() && pdf > 0.f && vis.Unoccluded(scene)) {
  				Spectrum Ld = L * vis.Transmittance(scene,renderer, NULL, rng, arena);
  				L_d = vr->p(p, w, -wo, ray.time) * Ld * float(nLights)/pdf;
+                
+                /* OUR CODE STARTS HERE */
+                
+                float wavelength = rainbowWavelength(ray.d, wo);
+                L_d = L_d.filter(wavelength);
+
+                /* OUR CODE ENDS HERE */
  			}
  		}
 		// Compute 'indirect' in-scattered radiance from photon map
-		 L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared,ray.time);
+        
+        /* OUR CODE HERE: disabled indirect photon volume integration */
+        //L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared,ray.time);
 		
+        
 		// Compute total in-scattered radiance
 		if (sa.y()!=0.0 || ss.y()!=0.0)
 			L_i = L_d + (ss/(sa+ss))*L_ii;
