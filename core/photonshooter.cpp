@@ -528,22 +528,23 @@ void PhotonShooter::Preprocess(const Scene *scene,
     delete directMap;
 }
 
-PhotonShooter *CreatePhotonShooter(const ParamSet &params) {
-    int nCaustic = params.FindOneInt("causticphotons", 20000);
-    int nIndirect = params.FindOneInt("indirectphotons", 100000);
-    int nVolume = params.FindOneInt("volumephotons", 0);
-    float stepSize = params.FindOneFloat("stepsize", 0.1f);
-    int nUsed = params.FindOneInt("nused", 50);
+
+PhotonShooter *CreatePhotonShooter(const ParamSet &surfparams, const ParamSet &volparams){
+    int nCaustic = surfparams.FindOneInt("causticphotons", 20000);
+    int nIndirect = surfparams.FindOneInt("indirectphotons", 100000);
+    int nVolume = volparams.FindOneInt("volumephotons", 0);
+    float stepSize = surfparams.FindOneFloat("stepsize", 0.1f);
+    int nUsed = surfparams.FindOneInt("nused", 50);
     if (PbrtOptions.quickRender) nCaustic = nCaustic / 10;
     if (PbrtOptions.quickRender) nIndirect = nIndirect / 10;
     if (PbrtOptions.quickRender) nUsed = max(1, nUsed / 10);
-    int maxSpecularDepth = params.FindOneInt("maxspeculardepth", 5);
-    int maxPhotonDepth = params.FindOneInt("maxphotondepth", 5);
-    bool finalGather = params.FindOneBool("finalgather", true);
-    int gatherSamples = params.FindOneInt("finalgathersamples", 32);
+    int maxSpecularDepth = surfparams.FindOneInt("maxspeculardepth", 5);
+    int maxPhotonDepth = surfparams.FindOneInt("maxphotondepth", 5);
+    bool finalGather = surfparams.FindOneBool("finalgather", true);
+    int gatherSamples = surfparams.FindOneInt("finalgathersamples", 32);
     if (PbrtOptions.quickRender) gatherSamples = max(1, gatherSamples / 4);
-    float maxDist = params.FindOneFloat("maxdist", .1f);
-    float gatherAngle = params.FindOneFloat("gatherangle", 10.f);
+    float maxDist = surfparams.FindOneFloat("maxdist", .1f);
+    float gatherAngle = surfparams.FindOneFloat("gatherangle", 10.f);
     return new PhotonShooter(nCaustic, nIndirect, nVolume, stepSize,
         nUsed, maxSpecularDepth, maxPhotonDepth, maxDist, finalGather, gatherSamples,
         gatherAngle);
