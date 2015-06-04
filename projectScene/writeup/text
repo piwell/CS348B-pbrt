@@ -1,0 +1,54 @@
+##Insperation##
+One inspiration for this project was the classic Pink Floyd cover art for Dark Side of the Moon.
+It is a simple display of dispersion of light.
+A small beam of light hits a prism and is divided into a rainbow of colored lights.
+This lead us to also investigate what causes rainbows and how we could simulate it.
+
+To recreate the album cover we needed to do two things.
+The first is to implement the physical phenomenon of dispersion, to split a white light ray into several monochromatic light rays of different colors.
+The other thing is to visualize the light path using volumetric rendering, otherwise we would only to be able to see the light when it hits a surface.
+PBRT has some support for this but it needs to be extended somewhat.
+
+![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_3.jpg)
+
+##Photonvolume integrator##
+For this part we expand on two sections in PBRT.
+We will use the the volumetric rendering integrator "single" and the surface integrator "photonmap".
+Combining these two integrators we get the result in figure 3. 
+The volumetric renderer produces the desired result until it hits the sphere.
+After that the photonmap surface integrator uses its stored photon data to render where the light ends up on the floor.
+What we lack is the volumetric scattering between the sphere and the floor.
+
+This part of the project have been heavily inspired by several previous projects in this course, especially [5] and implemented algorithms from [3].
+In PBRT only the photomap surface integrator uses photons and a lot of the photon shooting process is in that class.
+This part was extracted from the class and into a new class called "photonShoter".
+The photonShooter produces and stores the photons.
+This was done so both the surface and volume integrator can have easy access to the stored photons and that not one of them is responsible for shooting the photons.
+The photon shooting task was extended to not only store caustic, indirect and radiance photons but also volume photons.
+
+Now say something about the algorithm... blah blah blah
+
+Figure 4 shows the result, notice the volumetric causic effect created by the sphere.
+
+![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_2.jpg)
+![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_1.jpg)
+
+##Dispersion##
+There are three things that were implemneted to create dispersion: 
+
+ - Split white light rays into multiple monochromatic light rays.
+ - Refract rays at different angles depending on the wavelength of the light ray.
+ - Create materials that can determine the level of dispersion.
+ 
+
+
+
+##Rainbow##
+
+##References##
+- \[1][ Efficient Rendering of Atmospheric Phenomena](http://content.lib.utah.edu/utils/getfile/collection/uspace/id/1227/filename/1494.pdf)
+- \[2][ Rendering Light Dispersion with a Composite Spectral Model](http://www.cs.sfu.ca/~mark/ftp/Cgip00/dispersion_CGIP00.pdf)
+- \[3][ Efficient Simulation of Light Transport in Scenes with Participating Media using Photon Maps](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.118.6575&rep=rep1&type=pdf)
+- \[4][ A Practical Guide to Global Illumination using Photon Maps](https://graphics.stanford.edu/courses/cs348b-01/course8.pdf)
+- \[5][ 348b Final Project - Sydney Harbor Dust Storm](http://www.benol.so/school/cs348b/index.html)
+- \[6][ Explanation of Cauchy's equation V-number relation](http://www.luxrender.net/forum/viewtopic.php?t=8891)

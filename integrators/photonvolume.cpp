@@ -47,7 +47,7 @@ Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, Close
 	ClosePhoton *photons = proc.photons;
 	int nFound = proc.nFound;
 
-	if (nFound<3)
+	if (nFound<15)
 	 	return L;
 
 	Spectrum totalFlux(0.);
