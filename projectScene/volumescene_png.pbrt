@@ -37,13 +37,13 @@ AttributeBegin
 #   "color I" [2500 2500 2500 ] "float coneangle" [1]
 
 LightSource "distant" "point from" [0 3 0 ] "point to" [0 2 5 ]
-  "color L" [50 50 50 ]
+  "color L" [150 150 150 ]
 
 #LightSource "point" "color I" [1 1 1 ] "point from" [0 .95 0]
 AttributeEnd
 
 
-Material "matte" "color Kd" [.001 .001 .001 ]
+Material "matte" "color Kd" [.01 .01 .01 ]
 Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
   "point P" [ -5 0 -5  5 0 -5  5 0 5  -5 0 5]
 Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
