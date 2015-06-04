@@ -141,7 +141,7 @@ if (scene->Intersect(photonRay, &photonIsect)) {
                                photonBSDF->NumComponents(specularType));
         
         bool hasTransmission = (photonBSDF->NumComponents(BxDFType(BSDF_ALL_TRANSMISSION))>0);
-        if(hasTransmission && alpha.lambda<0 ){
+        if(hasTransmission && alpha.lambda<0 && photonIsect.primitive->dispersive()){
             alpha.splitSpectrum(spectrums);
         }else{
             spectrums.push_back(alpha);

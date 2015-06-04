@@ -58,7 +58,7 @@ public:
         const Transform &ObjectToWorld, MemoryArena &arena) const = 0;
     virtual BSSRDF *GetBSSRDF(const DifferentialGeometry &dg,
         const Transform &ObjectToWorld, MemoryArena &arena) const = 0;
-
+    virtual bool dispersive() const {return false;}
     // Primitive Public Data
     const uint32_t primitiveId;
 protected:
@@ -84,6 +84,7 @@ public:
                   const Transform &ObjectToWorld, MemoryArena &arena) const;
     BSSRDF *GetBSSRDF(const DifferentialGeometry &dg,
                       const Transform &ObjectToWorld, MemoryArena &arena) const;
+    bool dispersive() const {return material->dispersive();}
 private:
     // GeometricPrimitive Private Data
     Reference<Shape> shape;

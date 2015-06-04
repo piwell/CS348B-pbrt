@@ -54,6 +54,7 @@ public:
         Vn = v;
     }
     BSDF *GetBSDF(const DifferentialGeometry &dgGeom, const DifferentialGeometry &dgShading, MemoryArena &arena) const;
+    bool dispersive() const {return (Vn>0.f);}
 private:
     // GlassMaterial Private Data
     Reference<Texture<Spectrum> > Kr, Kt;

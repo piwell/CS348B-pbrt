@@ -154,22 +154,15 @@ Spectrum SpecularTransmission::Sample_f(const Vector &wo,
 
     int lambda;
     if(alpha != NULL && (lambda = alpha->extractLambda())>0 && Vn > 0.f){
-        //For dispersion        
-        //Chauchy's equation and V-number
-        //from http://www.luxrender.net/forum/viewtopic.php?t=8891
-
         float l = lambda/1000.f;
 
         float B = ((et-1)/Vn)*0.52345;
         float A = et -(B/0.34522792);
         et = A + B/pow(l,2);
-        // printf("et: %f \n",et);
     }
 
     if (!entering)
         swap(ei, et);
-
-
 
     // Compute transmitted ray direction
     float sini2 = SinTheta2(wo);

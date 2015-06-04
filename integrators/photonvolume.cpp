@@ -80,7 +80,7 @@ Spectrum PhotonVolumeIntegrator::LPhoton(KdTree<Photon> *map, int nLookup, Close
 	ClosePhoton *photons = proc.photons;
 	int nFound = proc.nFound;
 
-	if (nFound==0)
+	if (nFound<15)
 	 	return L;
 
 	Spectrum totalFlux(0.);
@@ -150,8 +150,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
 
  		Ray tauRay(pPrev, p - pPrev, 0.f, 1.f, ray.time, ray.depth);
 
- 		Spectrum stepTau = vr->tau(tauRay,
-                                   .5f * stepSize, rng.RandomFloat());
+ 		Spectrum stepTau = vr->tau(tauRay,.5f * stepSize, rng.RandomFloat());
  		Tr = Exp(-stepTau);
 
  		// Possibly terminate raymarching if transmittance is small.
