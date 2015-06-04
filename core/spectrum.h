@@ -275,11 +275,53 @@ public:
               first = false;
             }
           }
-          return l;
+        return l;
+    }
+
+    float intensityAt(float lambda) const{
+        Assert(sampledLambdaStart <= lambda);
+        Assert(lambda < sampledLambdaEnd);
+
+        float deltaLambda = float(sampledLambdaEnd-sampledLambdaStart)/(nSamples-1);
+        float iWithDecimals = (lambda - sampledLambdaStart)/deltaLambda;
+        int i = int(iWithDecimals);
+        float t = iWithDecimals - i;
+
+        return Lerp(t, c[i], c[i+1]);
+    }
+
+    CoefficientSpectrum toMonochromatic(float lambda){
+        CoefficientSpectrum ret(0.f);
+        ret.lambda = lambda;
+        ret.intensity = this->intensityAt(lambda);
+        return ret;
+    }
+
+    CoefficientSpectrum filter(float lambda) const{
+        //Assert(sampledLambdaStart <= lambda);
+        //Assert(lambda < sampledLambdaEnd);
+        if(!(sampledLambdaStart <= lambda || lambda < sampledLambdaEnd)){
+            return CoefficientSpectrum(0.f);
+        }
+
+        float deltaLambda = float(sampledLambdaEnd-sampledLambdaStart)/nSamples;
+        float indexWithDecimals = (lambda - sampledLambdaStart)/deltaLambda;
+
+        int index = int(indexWithDecimals);
+        float t = indexWithDecimals - index;
+
+        CoefficientSpectrum ret(0.f);
+        ret.c[index+0] = c[index+0] * t;
+        if(index + 1 < nSpectralSamples){
+            ret.c[index+1] = c[index+1] * (1-t);
+        }
+
+        return ret;
     }
 
 // bool monochromatic;  
-int lambda;
+float lambda;
+float intensity;
 protected:
     // CoefficientSpectrum Protected Data
     float c[nSamples];
@@ -414,10 +456,7 @@ public:
     SampledSpectrum(const RGBSpectrum &r, SpectrumType type = SPECTRUM_REFLECTANCE);
 
     void splitSpectrum(vector<SampledSpectrum>& spectrums);
-    // bool checkMonochromatic(int& l);
 
-    // bool monochromatic;
-    // int lambda;
 private:
     // SampledSpectrum Private Data
     static SampledSpectrum X, Y, Z;
