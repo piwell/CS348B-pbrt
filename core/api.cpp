@@ -126,6 +126,7 @@
 #include "volumes/homogeneous.h"
 #include "volumes/volumegrid.h"
 
+#include "volumes/rainbow.h"
 #include "integrators/photonvolume.h"
 
 #include <map>
@@ -526,6 +527,8 @@ VolumeRegion *MakeVolumeRegion(const string &name,
         vr = CreateGridVolumeRegion(volume2world, paramSet);
     else if (name == "exponential")
         vr = CreateExponentialVolumeRegion(volume2world, paramSet);
+    else if (name == "rainbow")
+        vr = CreateRainbowVolumeDensityRegion(volume2world, paramSet);
     else
         Warning("Volume region \"%s\" unknown.", name.c_str());
     paramSet.ReportUnused();
