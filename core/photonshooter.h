@@ -203,5 +203,5 @@ inline void PhotonProcess::operator()(const Point &p,
 }
 
 
-PhotonShooter *CreatePhotonShooter(const ParamSet &params);
+PhotonShooter *CreatePhotonShooter(const ParamSet &surfparams, const ParamSet &volparams);
 #endif

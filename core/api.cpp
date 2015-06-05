@@ -1226,7 +1226,7 @@ Renderer *RenderOptions::MakeRenderer() const {
     if( SurfIntegratorName == "photonmap"   ||
         SurfIntegratorName == "exphotonmap" ||
         VolIntegratorName  == "photonvolume") {
-        photonshooter = CreatePhotonShooter(SurfIntegratorParams);
+        photonshooter = CreatePhotonShooter(SurfIntegratorParams,VolIntegratorParams);
     }
 
     if (RendererName == "metropolis") {

@@ -28,20 +28,43 @@ The photon shooting task was extended to not only store caustic, indirect and ra
 
 Now say something about the algorithm... blah blah blah
 
-Figure 4 shows the result, notice the volumetric causic effect created by the sphere.
+Figure 4 shows the result, notice the volumetric caustic effect created by the sphere.
 
 ![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_2.jpg)
 ![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_1.jpg)
 
 ##Dispersion##
-There are three things that were implemneted to create dispersion: 
+There are three things that were implemented to create dispersion: 
 
  - Split white light rays into multiple monochromatic light rays.
- - Refract rays at different angles depending on the wavelength of the light ray.
  - Create materials that can determine the level of dispersion.
+ - Refract rays at different angles depending on the wavelength of the light ray.
  
+The first was done by extending the Spectrum class.
+We added a member variable that stores the spectrum wavelength if it is monochromatic.
+We also added a simple function that creates multiple spectrum from one and stores it in a vector.
+These two simple additions made it possible to split non-monochromatic light (of any color) into multiple monochromatic rays.
 
+The second implantation was in the glass material class.
+We added a member variable that stores the V-number (or Abbe number) from user input.
+Just as the user can set the index of refraction for the glass material we made it just at simple to add a V-number. 
+The V-number defines how dispersive (how much the light splits) the material is.
+Just as different types of glass have different index of refractions they also have different V-numbers, both determines how light is refracted and transmitted when it intersects the material.
 
+The last implementation was to extend the SpecularTransmission class in reflection.h.
+This part controls the angle of the new transmitted ray.
+Before the angle depended on the indecies of refraction for the materials.
+Now it must depend on both the wavelength of the light and the V-number of the material.
+To determine the angle depending on the wavelength we used Cauchy's equation. It looks like this:
+
+Where A and B is material dependent constants and l is the wavelength in micrometers and n is the index of refraction.
+The definition of the V-number is this: 
+
+We can use this definition to determine the A and B for the material like this:
+
+Now, the equation for the new index of refraction becomes:
+
+The result can be seen in the images below. In order from left to right these are: no dispersion, low dispersion (crown glass), high dispersion (flint glass), extreme dispersion (flint glass).
 
 ##Rainbow##
 
