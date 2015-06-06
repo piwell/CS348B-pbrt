@@ -22,7 +22,7 @@ WorldBegin
 
 Translate 0 -0.5 3.5
 
-Volume "homogeneous"
+Volume "rainbow"
   "color sigma_a" [.05 .05 .05 ]
   "color sigma_s" [.1 .1 .1]
   "point p0" [ -10 0 -5 ] "point p1" [ 5 5 5]

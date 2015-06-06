@@ -4,6 +4,7 @@
 // #include "integrators/photonmap.cpp"
 #include "paramset.h"
 #include "montecarlo.h"
+#include "rainbow.h"
 
 void PhotonVolumeIntegrator::RequestSamples(Sampler *sampler, Sample *sample,
         const Scene *scene){
@@ -29,7 +30,6 @@ Spectrum PhotonVolumeIntegrator::Transmittance(const Scene *scene,
 }
 
 
-int counter = 0;
 float rainbowWavelength(const Vector &w, const Vector &wi){
     //1. Calc wavelength depending on theta
     
@@ -42,7 +42,7 @@ float rainbowWavelength(const Vector &w, const Vector &wi){
     //printf("%f %f %f\n", p->wi.x, p->wi.y, p->wi.z);
     
     
-    //Water droplets modelled as spheres have produce a
+    //Water droplets modelled produce a
     //primary rainbow when angle between incoming and outgoing
     //rays are [40.4, 42.3] degrees.
     //If not in this range, don't contribute to total flux
@@ -114,6 +114,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
         Spectrum *T, MemoryArena &arena) const {
  	
  	VolumeRegion *vr = scene->volumeRegion;
+    RainbowVolume* rv = dynamic_cast<RainbowVolume*>(vr);
  	KdTree<Photon>* volumeMap = photonShooter->volumeMap; 
 
  	float t0, t1;
@@ -194,18 +195,15 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
  				L_d = vr->p(p, w, -wo, ray.time) * Ld * float(nLights)/pdf;
                 
                 /* OUR CODE STARTS HERE */
-                
-                // float wavelength = rainbowWavelength(ray.d, wo);
-                // L_d = L_d.filter(wavelength);
 
+                if(rv){
+                    L_d = rv->waterdropReflection(L_d, ray.d, wo);
+                }
                 /* OUR CODE ENDS HERE */
  			}
  		}
 		// Compute 'indirect' in-scattered radiance from photon map
-        
-        /* OUR CODE HERE: disabled indirect photon volume integration */
-        L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared,ray.time);
-		
+        L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared, ray.time);
         
 		// Compute total in-scattered radiance
 		if (sa.y()!=0.0 || ss.y()!=0.0)

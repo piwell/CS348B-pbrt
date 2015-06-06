@@ -10,6 +10,7 @@
 		0360D4141B1A67780060687F /* photonvolume.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0360D4121B1A67780060687F /* photonvolume.cpp */; };
 		0360D4171B1A67860060687F /* realistic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0360D4151B1A67860060687F /* realistic.cpp */; };
 		03711C301B1ED08A0037444C /* photonshooter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03711C2E1B1ED08A0037444C /* photonshooter.cpp */; };
+		03FEDC791B2131DC00EBDCDB /* rainbow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03FEDC771B2131DC00EBDCDB /* rainbow.cpp */; };
 		B130248E1236EE5100206AC7 /* fileutil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B130248C1236EE5100206AC7 /* fileutil.cpp */; };
 		B13B5765161245F5008FFA44 /* targa.c in Sources */ = {isa = PBXBuildFile; fileRef = B13B5763161245F5008FFA44 /* targa.c */; };
 		B19397BB12083210008317C5 /* shinymetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B19397B912083210008317C5 /* shinymetal.cpp */; };
@@ -177,6 +178,8 @@
 		0360D4161B1A67860060687F /* realistic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = realistic.h; sourceTree = "<group>"; };
 		03711C2E1B1ED08A0037444C /* photonshooter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = photonshooter.cpp; sourceTree = "<group>"; };
 		03711C2F1B1ED08A0037444C /* photonshooter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = photonshooter.h; sourceTree = "<group>"; };
+		03FEDC771B2131DC00EBDCDB /* rainbow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rainbow.cpp; sourceTree = "<group>"; };
+		03FEDC781B2131DC00EBDCDB /* rainbow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rainbow.h; sourceTree = "<group>"; };
 		B130248C1236EE5100206AC7 /* fileutil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fileutil.cpp; sourceTree = "<group>"; };
 		B130248D1236EE5100206AC7 /* fileutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fileutil.h; sourceTree = "<group>"; };
 		B13B5763161245F5008FFA44 /* targa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = targa.c; sourceTree = "<group>"; };
@@ -814,6 +817,8 @@
 		B1D8EC761170310E00A8A49E /* volumes */ = {
 			isa = PBXGroup;
 			children = (
+				03FEDC771B2131DC00EBDCDB /* rainbow.cpp */,
+				03FEDC781B2131DC00EBDCDB /* rainbow.h */,
 				B1D8EC771170310E00A8A49E /* exponential.cpp */,
 				B1D8EC781170310E00A8A49E /* exponential.h */,
 				B1D8EC791170310E00A8A49E /* homogeneous.cpp */,
@@ -917,6 +922,7 @@
 				B1D8EBCD117030F200A8A49E /* renderer.cpp in Sources */,
 				B1D8EBCE117030F200A8A49E /* rng.cpp in Sources */,
 				B1D8EBCF117030F200A8A49E /* sampler.cpp in Sources */,
+				03FEDC791B2131DC00EBDCDB /* rainbow.cpp in Sources */,
 				B1D8EBD0117030F200A8A49E /* scene.cpp in Sources */,
 				B1D8EBD1117030F200A8A49E /* sh.cpp in Sources */,
 				B1D8EBD2117030F200A8A49E /* shape.cpp in Sources */,
