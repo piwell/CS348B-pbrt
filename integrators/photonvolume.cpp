@@ -4,7 +4,7 @@
 // #include "integrators/photonmap.cpp"
 #include "paramset.h"
 #include "montecarlo.h"
-#include "rainbow.h"
+#include "volumes/rainbow.h"
 
 void PhotonVolumeIntegrator::RequestSamples(Sampler *sampler, Sample *sample,
         const Scene *scene){
@@ -211,7 +211,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
 		else
 			L_i = L_d;
 
-		Spectrum nLv = (sa*vr->Lve(p,w,ray.time)*step) + (ss*L_i*step) + (Tr * L)v;
+		Spectrum nLv = (sa*vr->Lve(p,w,ray.time)*step) + (ss*L_i*step) + (Tr * Lv);
 
 		Lv = nLv;
  		sampOffset++;
