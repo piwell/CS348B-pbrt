@@ -195,8 +195,8 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
                 
                 /* OUR CODE STARTS HERE */
                 
-                float wavelength = rainbowWavelength(ray.d, wo);
-                L_d = L_d.filter(wavelength);
+                // float wavelength = rainbowWavelength(ray.d, wo);
+                // L_d = L_d.filter(wavelength);
 
                 /* OUR CODE ENDS HERE */
  			}
@@ -204,7 +204,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
 		// Compute 'indirect' in-scattered radiance from photon map
         
         /* OUR CODE HERE: disabled indirect photon volume integration */
-        //L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared,ray.time);
+        L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared,ray.time);
 		
         
 		// Compute total in-scattered radiance
@@ -213,7 +213,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
 		else
 			L_i = L_d;
 
-		Spectrum nLv = (sa*vr->Lve(p,w,ray.time)*step) + (ss*L_i*step) + (Tr * Lv);
+		Spectrum nLv = (sa*vr->Lve(p,w,ray.time)*step) + (ss*L_i*step) + (Tr * L)v;
 
 		Lv = nLv;
  		sampOffset++;

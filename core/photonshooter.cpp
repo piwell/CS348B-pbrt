@@ -80,7 +80,6 @@ if (scene->Intersect(photonRay, &photonIsect)) {
         }
         
         if (interaction){
-            //printf("Interaction! Not human interaction, obviously, but interaction nonetheless!\n");
             Point interactPt = rn(t0);
 
             //figure out if it's absorbed or scattered
@@ -101,11 +100,9 @@ if (scene->Intersect(photonRay, &photonIsect)) {
                     { MutexLock lock(mutex);
                      localVolumePhotons.push_back(photon);
                     }
-                     // volumePhotons.push_back(photon);
                 }else{
                     shooter->nVolumePaths++;
                 }
-
 
                 // get a uniform sphere direction sample
                 float u1 = rng->RandomFloat();
