@@ -228,7 +228,7 @@ if (scene->Intersect(photonRay, &photonIsect)) {
                 localDirectPhotons, localIndirectPhotons, localCausticPhotons, localVolumePhotons, localRadiancePhotons,
                 causticDone, indirectDone, volumeDone, arena, rng, rpReflectances, rpTransmittances);
         }
-}
+    }
 }
 
 
@@ -531,8 +531,8 @@ void PhotonShooter::Preprocess(const Scene *scene,
 
 PhotonShooter *CreatePhotonShooter(const ParamSet &surfparams, const ParamSet &volparams){
     int nCaustic = surfparams.FindOneInt("causticphotons", 20000);
-    int nIndirect = surfparams.FindOneInt("indirectphotons", 100000);
-    int nVolume = volparams.FindOneInt("volumephotons", 0);
+    int nIndirect = surfparams.FindOneInt("indirectphotons", 10000);
+    int nVolume = surfparams.FindOneInt("volumephotons", 10000);
     float stepSize = surfparams.FindOneFloat("stepsize", 0.1f);
     int nUsed = surfparams.FindOneInt("nused", 50);
     if (PbrtOptions.quickRender) nCaustic = nCaustic / 10;

@@ -114,6 +114,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
         Spectrum *T, MemoryArena &arena) const {
  	
  	VolumeRegion *vr = scene->volumeRegion;
+    RainbowVolume* rv = dynamic_cast<RainbowVolume*>(vr);
  	KdTree<Photon>* volumeMap = photonShooter->volumeMap; 
 
  	float t0, t1;
@@ -194,18 +195,14 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
  				L_d = vr->p(p, w, -wo, ray.time) * Ld * float(nLights)/pdf;
                 
                 /* OUR CODE STARTS HERE */
-                
-                RainbowVolume* rv = dynamic_cast<RainbowVolume*>(vr);
                 if(rv){
                     L_d = rv->waterdropReflection(L_d, ray.d, wo);
                 }
-
                 /* OUR CODE ENDS HERE */
  			}
  		}
 		// Compute 'indirect' in-scattered radiance from photon map
-        
-        //L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared,ray.time);
+        L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared, ray.time);
         
 		// Compute total in-scattered radiance
 		if (sa.y()!=0.0 || ss.y()!=0.0)
