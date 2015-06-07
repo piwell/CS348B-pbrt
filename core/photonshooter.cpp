@@ -80,7 +80,6 @@ if (scene->Intersect(photonRay, &photonIsect)) {
         }
         
         if (interaction){
-            //printf("Interaction! Not human interaction, obviously, but interaction nonetheless!\n");
             Point interactPt = rn(t0);
 
             //figure out if it's absorbed or scattered
@@ -101,11 +100,9 @@ if (scene->Intersect(photonRay, &photonIsect)) {
                     { MutexLock lock(mutex);
                      localVolumePhotons.push_back(photon);
                     }
-                     // volumePhotons.push_back(photon);
                 }else{
                     shooter->nVolumePaths++;
                 }
-
 
                 // get a uniform sphere direction sample
                 float u1 = rng->RandomFloat();
@@ -532,7 +529,7 @@ void PhotonShooter::Preprocess(const Scene *scene,
 PhotonShooter *CreatePhotonShooter(const ParamSet &surfparams, const ParamSet &volparams){
     int nCaustic = surfparams.FindOneInt("causticphotons", 20000);
     int nIndirect = surfparams.FindOneInt("indirectphotons", 10000);
-    int nVolume = surfparams.FindOneInt("volumephotons", 10000);
+    int nVolume = volparams.FindOneInt("volumephotons", 0);
     float stepSize = surfparams.FindOneFloat("stepsize", 0.1f);
     int nUsed = surfparams.FindOneInt("nused", 50);
     if (PbrtOptions.quickRender) nCaustic = nCaustic / 10;

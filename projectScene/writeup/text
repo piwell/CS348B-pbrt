@@ -25,10 +25,40 @@ This part was extracted from the class and into a new class called "photonShoter
 The photonShooter produces and stores the photons.
 This was done so both the surface and volume integrator can have easy access to the stored photons and that not one of them is responsible for shooting the photons.
 The photon shooting task was extended to not only store caustic, indirect and radiance photons but also volume photons.
+The volume photons is the photons that interacts with the medium but does not come directly from a light source.
 
-Now say something about the algorithm... blah blah blah
+To estimate the in-scattered radiance $L_i(x,\bar \omega)$ we split the calculation into two parts, direct $L_{i,d}$ and indirect $L_{i,i}$. The direct component is the one that is already implemented in PBRT, the inderect compontent uses the stored volume photons and the relationship between scattered flux $Phi$ and radiance $L$ in a participation medium.
 
-Figure 4 shows the result, notice the volumetric caustic effect created by the sphere.
+$$
+L(x,\bar w) = \frac{d^2 \Phi(x,\bar \omega)}{\sigma_s(x)d\omega dV}
+$$
+
+$sigma$ determines how much of the incident light is scattered ad point $x$. ($sigma_a$ determines how much light is absorbed.) The in-scattered radiance $L_i$ depends on radiance $L$ from all direction over the sphere is
+
+$$
+L_{i,i} = (x,\bar \omega) = \int_\Omega f(x,\bar \omega', \bar \omega)L(x,\bar\omega')d\omega'
+$$
+
+Function $f$ is the normalized phase function. Combining these two functons we get
+
+$$
+L_{i,i}(x,\bar\omega) = \frac{1}{\sigma_s(x)} \sum^{n}_{p=1} f(x,\bar\omega_p',\bar\omega)\frac{\Delta\Phi_p(x,\omega_p')}{\frac{4/3}\pi r^3}
+$$
+
+We find the n nearest photons in a user specified distance use the above function to estimate $L_i$. Compared to estimating radiance on a surface that uses the projected area, the density in a medium is computed using the full volume. Since we store and use all photons that interact with the medium the indirect component $L_{i,i}$ has to be multiplied by the scattering albedo $\frac{\sigma_s(x)}{\sigma_s(x)+\sigma_a(x)}$. The in-scattered radiance at point $x$ then becomes
+
+$$
+L_i(x,\bar \omega) = L_{i,d}(x,\bar \omega) + \frac{\sigma_s(x)}{\sigma_s(x)+\sigma_a(x)}L_{i,i}(x,\bar \omega)
+$$
+
+To compute the final radiance of a ray $L$ we use a ray marching algorithm that computes the radiance at points along the ray with a specified step size. Each step attenuates the radiance from the previous point and computes and adds the contribution from the emission and in-scattering.
+
+$$
+L(x_k, \bar \omega) = \sigma_a(x_k) L_e(x_k,\bar \omega)\Delta x_k +\sigma_s(x_k) L_i(x_k,\bar \omega)\Delta x_k + e^{-\sigma_t(x_k)\Delta x_k} L(x_{k-1},\bar \omega)
+$$
+
+Where $L_e$ is the emmison, $\Delta x_k$ is the step size and $\sigma_t = \sigma_s + \sigma_a$.
+Figure 4 shows the result of this algorithm.
 
 ![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_2.jpg)
 ![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_1.jpg)
@@ -55,23 +85,44 @@ The last implementation was to extend the SpecularTransmission class in reflecti
 This part controls the angle of the new transmitted ray.
 Before the angle depended on the indecies of refraction for the materials.
 Now it must depend on both the wavelength of the light and the V-number of the material.
-To determine the angle depending on the wavelength we used Cauchy's equation. It looks like this:
+To determine the angle depending on the wavelength we used Cauchy's equation:
 
-Where A and B is material dependent constants and l is the wavelength in micrometers and n is the index of refraction.
-The definition of the V-number is this: 
+$$
+n(\lambda) = A + \frac{B}{\lambda^2}
+$$
 
-We can use this definition to determine the A and B for the material like this:
+Where A and B is material dependent constants and $\lambda$ is the wavelength in micrometers and n is the index of refraction for that wavelength.
+The definition of the V-number is:
 
-Now, the equation for the new index of refraction becomes:
+$$
+V_D = \frac{n_D - 1}{n_F - n_C}
+$$
 
-The result can be seen in the images below. In order from left to right these are: no dispersion, low dispersion (crown glass), high dispersion (flint glass), extreme dispersion (flint glass).
+$n_D, n_F$ and $n_C$ are the refractive indices of the material at the wavelengths of the Frauhofer D-,F- and C-spectral lines ($ \lambda_D = 589.3nm, \lambda_F = 486.1nm, \lambda_C = 656.3nm$). $V_d$ is the V-number (Abbe number). By using these two equation together we can determine the A and B for the material(explained in more detail in the forum thread [6]). It gives us the following definition of A and B:
 
+$$
+B = \frac{\lambda^2_C \lambda^2_F}{\lambda^2_C - \lambda^2_F} \frac{n_D-1}{V_d}
+  = 0.52345 \frac{n_D -1}{V_d} 
+$$
+
+$$
+A = n_D - \frac{B}{\lambda^2_D} = n_D - \frac{B}{0.34522792}
+$$
+
+The implementation uses the provided index of refraction as $n_D$ and changes the index with the equation above.
+The result can be seen in the images below. Top right is a glass with no dispersion, top left is a crown glass with low dispersion ($Vd = 64.17$). Bottom left is a flint glass with high dispersion ($Vd = 36.37$) and bottom right is a flint glass with extreme dispersion ($Vd = 1.46$).
+The lower the V-number the higher the dispersion of the material.
+
+![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_8.jpg)
+![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_10.jpg)
+![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_12.jpg)
+![](http://graphics.stanford.edu/courses/cs348b/mysitecontent/article_images/184_13.jpg)
 ##Rainbow##
 
 ##References##
-- \[1][ Efficient Rendering of Atmospheric Phenomena](http://content.lib.utah.edu/utils/getfile/collection/uspace/id/1227/filename/1494.pdf)
-- \[2][ Rendering Light Dispersion with a Composite Spectral Model](http://www.cs.sfu.ca/~mark/ftp/Cgip00/dispersion_CGIP00.pdf)
-- \[3][ Efficient Simulation of Light Transport in Scenes with Participating Media using Photon Maps](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.118.6575&rep=rep1&type=pdf)
-- \[4][ A Practical Guide to Global Illumination using Photon Maps](https://graphics.stanford.edu/courses/cs348b-01/course8.pdf)
-- \[5][ 348b Final Project - Sydney Harbor Dust Storm](http://www.benol.so/school/cs348b/index.html)
-- \[6][ Explanation of Cauchy's equation V-number relation](http://www.luxrender.net/forum/viewtopic.php?t=8891)
+1. [ Efficient Rendering of Atmospheric Phenomena](http://content.lib.utah.edu/utils/getfile/collection/uspace/id/1227/filename/1494.pdf)
+2. [ Rendering Light Dispersion with a Composite Spectral Model](http://www.cs.sfu.ca/~mark/ftp/Cgip00/dispersion_CGIP00.pdf)
+3. [ Efficient Simulation of Light Transport in Scenes with Participating Media using Photon Maps](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.118.6575&rep=rep1&type=pdf)
+4. [ A Practical Guide to Global Illumination using Photon Maps](https://graphics.stanford.edu/courses/cs348b-01/course8.pdf)
+5. [ 348b Final Project - Sydney Harbor Dust Storm](http://www.benol.so/school/cs348b/index.html)
+6. [ Explanation of Cauchy's equation V-number relation](http://www.luxrender.net/forum/viewtopic.php?t=8891)

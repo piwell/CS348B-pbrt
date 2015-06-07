@@ -4,7 +4,7 @@
 // #include "integrators/photonmap.cpp"
 #include "paramset.h"
 #include "montecarlo.h"
-#include "rainbow.h"
+#include "volumes/rainbow.h"
 
 void PhotonVolumeIntegrator::RequestSamples(Sampler *sampler, Sample *sample,
         const Scene *scene){
@@ -195,6 +195,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
  				L_d = vr->p(p, w, -wo, ray.time) * Ld * float(nLights)/pdf;
                 
                 /* OUR CODE STARTS HERE */
+
                 if(rv){
                     L_d = rv->waterdropReflection(L_d, ray.d, wo);
                 }
