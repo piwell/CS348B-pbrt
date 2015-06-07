@@ -202,7 +202,9 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
  			}
  		}
 		// Compute 'indirect' in-scattered radiance from photon map
-        L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared, ray.time);
+        if(!rv){
+            L_ii += LPhoton(volumeMap, nUsed, lookupBuf, w, p, vr, maxDistSquared, ray.time);
+        }
         
 		// Compute total in-scattered radiance
 		if (sa.y()!=0.0 || ss.y()!=0.0)
