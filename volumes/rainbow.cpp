@@ -3,31 +3,76 @@
 #include "volumes/rainbow.h"
 #include "paramset.h"
 
-float RainbowVolume::rainbowWavelength(const Vector &w, const Vector &wi){
-	float cosTheta = Dot(wi, -w);
-    const float radToDeg = 57.2957;
-    float theta = radToDeg * acosf(cosTheta);
 
-	const float minTheta = 40.4, minWavelength = 400.0;
-    const float maxTheta = 42.3, maxWavelength = 700.0;
+float LerpOrZero(float theta, float minTheta, float maxTheta,
+                 float startWavelength, float endWavelength){
 
-	if (theta < minTheta || maxTheta < theta){
+    if (theta < minTheta || maxTheta < theta){
         return 0;
     }
 
-	const float thetaRange = maxTheta-minTheta;
-    const float wavelengthRange = maxWavelength-minWavelength;
+    const float thetaRange = maxTheta-minTheta;
+    const float wavelengthRange = endWavelength-startWavelength;
     
-    float wavelength = minWavelength + (theta-minTheta) * wavelengthRange / thetaRange;
+    float wavelength = startWavelength + (theta-minTheta) * wavelengthRange / thetaRange;
     
     return wavelength;
 }
 
+float LerpTransfer(float x, float xMin, float xMax,
+                 float y0, float y1){
+    if (x < xMin){
+        return y0;
+    }
+    if(xMax < x){
+        return y1;
+    }
 
-Spectrum RainbowVolume::waterdropReflection(const Spectrum& spectrum, 
-            const Vector &w, const Vector &wi){
-    return spectrum.filter(rainbowWavelength(w, wi));
+    const float thetaRange = xMax-xMin;
+    const float range = y1-y0;
+    
+    float y = y0 + (x-xMin) * range / thetaRange;
+    
+    return y;
 }
+
+//Wavelength and angle data from
+//http://www.atoptics.co.uk/rainbows/sec.htm 
+Spectrum RainbowVolume::rainbowReflection(const Spectrum& spectrum, 
+            const Vector &w, const Vector &wi){
+    //Phase angle
+    float cosTheta = Dot(wi, -w);
+    const float radToDeg = 57.2957;
+    float theta = radToDeg * acosf(cosTheta);
+
+    //Modified phase intensity for non-monocromatic light
+    float I = PhaseMieHazy(wi, -w);
+    float innerGlow = LerpTransfer(theta, 40.4, 40.45, 1.0, 0.9);
+    I *= innerGlow;
+
+    float rainbowI = 0.92f;
+    float mistI = 0.08f;
+
+
+    //Test primary rainbow
+    float lambda = LerpOrZero(theta, 40.4, 42.3, 400.0, 700.0);
+    if(!lambda) {
+        //Test secondary rainbow
+        lambda = LerpOrZero(theta, 51.0, 54.4, 700.0, 400.0);
+        if(lambda){
+            //Second rainbow has 42% intensity of primary
+            rainbowI *= 0.42;
+        }
+    }
+    if(!lambda) {
+        return I * mistI * spectrum;
+    }
+
+    const Spectrum& rainbow = spectrum.filter(lambda);
+    return I * (mistI*spectrum + rainbowI*rainbow);
+}
+
+
 
 RainbowVolume *CreateRainbowVolumeDensityRegion(const Transform &volume2world,
         const ParamSet &params){

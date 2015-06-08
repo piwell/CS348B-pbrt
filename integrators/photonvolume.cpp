@@ -191,15 +191,14 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
             
 
  			if (!L.IsBlack() && pdf > 0.f && vis.Unoccluded(scene)) {
- 				Spectrum Ld = L * vis.Transmittance(scene,renderer, NULL, rng, arena);
- 				L_d = vr->p(p, w, -wo, ray.time) * Ld * float(nLights)/pdf;
-                
-                /* OUR CODE STARTS HERE */
-
+                Spectrum Ld = L * vis.Transmittance(scene,renderer, NULL, rng, arena);
+            
                 if(rv){
-                    L_d = rv->waterdropReflection(L_d, ray.d, wo);
+                    L_d = rv->rainbowReflection(Ld, ray.d, wo);
                 }
-                /* OUR CODE ENDS HERE */
+                else {
+                    L_d = vr->p(p, w, -wo, ray.time) * Ld * float(nLights)/pdf;
+                }
  			}
  		}
 		// Compute 'indirect' in-scattered radiance from photon map

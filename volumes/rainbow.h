@@ -18,11 +18,9 @@ public:
         
     }
     
-    Spectrum waterdropReflection(const Spectrum& spectrum, const Vector &w, const Vector &wi);
+    Spectrum rainbowReflection(const Spectrum& spectrum, const Vector &w, const Vector &wi);
         
 private:
-
-    float rainbowWavelength(const Vector &w, const Vector &wi);
 
 };
 
