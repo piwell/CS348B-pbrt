@@ -9,9 +9,10 @@ SurfaceIntegrator "photonmap" "integer nused" [300] "bool finalgather" ["true"]
   "integer finalgathersamples" [64]
   "float maxdist" [ .15] "integer indirectphotons" [0]
   "integer causticphotons" [5000]
-  "integer volumephotons"  [5000]
+  
 
 VolumeIntegrator "photonvolume" "float stepsize" [.15] "integer nused" [50] "float maxdist" [0.5]
+"integer volumephotons"  [5000]
 
 
 Rotate 0 1 0 0

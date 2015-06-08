@@ -1,0 +1,62 @@
+Film "image" "string filename" "rainbow.png"
+ "integer xresolution" [1024] "integer yresolution" [1025]
+   
+
+Sampler "lowdiscrepancy" "integer pixelsamples" [8]
+PixelFilter "gaussian"
+
+SurfaceIntegrator "photonmap" "integer nused" [300] "bool finalgather" ["true"]
+  "integer finalgathersamples" [64]
+  "float maxdist" [ .15] "integer indirectphotons" [0]
+  "integer causticphotons" [0]
+
+VolumeIntegrator "photonvolume" "float stepsize" [.15] "integer nused" [50] "float maxdist" [0.5]
+  "integer volumephotons"  [5000]
+
+Rotate -3 1 0 0
+Translate 1 -1 0
+Camera "perspective" "float fov" [10]
+
+
+WorldBegin
+
+Translate 1 -0.5 3.5
+
+
+#Rainow
+Volume "rainbow"
+  "color sigma_a" [.05 .05 .05 ]
+  "color sigma_s" [.1 .1 .1]
+  "point p0" [ -10 -5 5 ] "point p1" [ 5 10 15]
+
+
+LightSource "distant" "point from" [3.4 3 -5 ] "point to" [0 0 0 ]
+  "color L" [150 150 150 ]
+
+
+# Walls
+Translate 0 0 5
+Scale 3 3 3
+# Texture "grid" "color" "imagemap" "string filename" ["textures/lines.jpg"]
+# Material "matte" "color Kd" [.01 .01 .01 ]
+Texture "grid" "color" "imagemap" "string filename" ["textures/lines.tga"]
+Texture "sgrid" "color" "scale" "texture tex1" "grid" "color tex2" [ .02 .02 .02 ]
+Material "matte" "texture Kd" "sgrid"
+
+Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
+  "point P" [ -5 0 -5  5 0 -5  5 0 5  -5 0 5]
+  "float uv" [ 0 0 5 0 5 5 0 5 ]
+
+# Translate 0 -5 0
+# Texture "sky" "color" "imagemap" "string filename" ["textures/sky.tga"]
+# Texture "ssky" "color" "scale" "texture tex1" "sky" "color tex2" [ .01 .01 .01 ]
+# Material "matte" "texture Kd" "ssky"
+Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
+  "point P" [ -5 0 3  5 0 3   5 10 3  -5 10 3 ]
+  "float uv" [ 0 0  5 0  5 5  0 5 ]
+
+Shape "trianglemesh" "integer indices" [0 1 2 2 3 0]
+  "point P" [ 5 0 3   5 0 -3  5 10 -3  5 10 3]
+  "float uv" [ 0 0 5 0 5 5 0 5 ]
+
+WorldEnd

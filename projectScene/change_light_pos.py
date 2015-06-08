@@ -13,43 +13,34 @@ def usage():
 # 	sys.exit()
 #filename = sys.argv[1]
 
-filename = 'volumescene_png.pbrt'
+filename = 'final_png.pbrt'
 
-dim = 1 #in [x, y, z]
-start = -5
-end = 5
+dim = 0 #in [x, y, z]
+start = 0
+end = 3
 steps = 10
 step = float(end-start)/steps
+attr = 'point from'
 
 filedata = None
 with open (filename, "r") as myfile:
 	filedata = myfile.read()
 
 
-# def setNumSamplesPerPixel(pbrtData, samplesPerPixel):
-# 	samplerLine = re.search('Sampler.+', pbrtData).group()
-# 	newSamplerLine = re.sub('[\d+]', str(samplesPerPixel), samplerLine)
-# 	return re.sub('Sampler.+', newSamplerLine, pbrtData)
-
-# def setNumSamplesPerLight(pbrtData, samplesPerLight):
-# 	samplerLine = re.search('AreaLightSource.+', pbrtData).group()
-# 	newSamplerLine = re.sub('\[(\d+)]', '['+str(samplesPerLight)+']', samplerLine)
-# 	return re.sub('AreaLightSource.+', newSamplerLine, pbrtData)
-
 def setLightPos(pbrtData, dim, value):
-	coordinatesPattern = '\nLightSource.+"point from"\s+\[([0-9\-]+)\s+([0-9\-]+)\s+([0-9\-]+)\s?]'
+	
+	coordinatesPattern = '\nLightSource.+"' + attr + '"\s+\[([0-9\-]+)\s+([0-9\-]+)\s+([0-9\-]+)\s?]'
 	res = re.search(coordinatesPattern, pbrtData)
-	pointFrom = res.group(0)
-	newPointFrom = pointFrom[:pointFrom.rfind('[')+1]
+	pointAttr = res.group(0)
+	newPointAttr = pointAttr[:pointAttr.rfind('[')+1]
 	for i in xrange(0,3):
 		if i == dim:
-			newPointFrom += str(value) + " "
+			newPointAttr += str(value) + " "
 		else:
-			newPointFrom += str(res.group(i+1)) + " "
-	newPointFrom+= ']'
+			newPointAttr += str(res.group(i+1)) + " "
+	newPointAttr+= ']'
 	
-	#print re.search(pointFrom, pbrtData)
-	return re.sub('\nLightSource.+"point from"\s+\[[0-9\-\s]+\]', newPointFrom, pbrtData)
+	return re.sub('\nLightSource.+"' + attr + '"\s+\[[0-9\-\s]+\]', newPointAttr, pbrtData)
 
 def appendToOutputFileName(pbrtData, extension):
 	fileNameLine = re.search('Film.+"string filename".+', pbrtData).group()
