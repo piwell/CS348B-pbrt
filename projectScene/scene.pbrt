@@ -2,7 +2,7 @@ Film "image"
  "integer xresolution" [300] "integer yresolution" [300]
   "string filename" "scene.exr" 
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [16]
+Sampler "lowdiscrepancy" "integer pixelsamples" [8]
 PixelFilter "gaussian"
 
 SurfaceIntegrator "photonmap" "integer nused" [300] "bool finalgather" ["true"]
@@ -12,7 +12,7 @@ SurfaceIntegrator "photonmap" "integer nused" [300] "bool finalgather" ["true"]
 
 VolumeIntegrator "photonvolume" "float stepsize" [.05] 
   "integer nused" [300] "float maxdist" [0.5]
-  "integer volumephotons"  [500000]
+  "integer volumephotons"  [1000000]
 
 
 Rotate 5 1 0 0 
@@ -29,8 +29,9 @@ Volume "homogeneous"
 
 
 AttributeBegin
-LightSource "spot" "point from" [-2 5 0 ] "point to" [1 2.1 0 ]
-  "color I" [2500 2500 2500 ] "float coneangle" [1]
+LightSource "spot" "point from" [-3 5 0 ] "point to" [0 2 0 ]
+  "color I" [2500 2500 2500 ] "float coneangle" [6]
+LightSource "point" "point from" [0 2 -4] "color I" [8 8 8]
 AttributeEnd
 
 AttributeBegin
@@ -43,13 +44,13 @@ Material  "glass" "color Kr" [0 0 0] "color Kt" [1 1 1]
         # "float index" [2.4175] "float Vn" [55.30] #diamond
 
                     
-Translate 1 2 0
-# Shape "sphere" "float radius" [.6]
+Translate 0 2 0
+Shape "sphere" "float radius" [.6]
 
-Rotate 90 0 1 0
-Rotate 60 1 0 0
-Scale 0.5 0.5 0.5
-Include "obj/prism.pbrt"
+# Rotate 90 0 1 0
+# Rotate 60 1 0 0
+# Scale 0.5 0.5 0.5
+# Include "obj/prism.pbrt"
 
 AttributeEnd
 
