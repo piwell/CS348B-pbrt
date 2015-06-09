@@ -1,4 +1,4 @@
-Film "image" "string filename" "secondary_rainbow.png"
+Film "image" "string filename" "secondary_rainbow.exr"
  "integer xresolution" [512] "integer yresolution" [512]
    
 

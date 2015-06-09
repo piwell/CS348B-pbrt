@@ -1,6 +1,6 @@
 Film "image"
  # "integer xresolution" [851] "integer yresolution" [315]
- "integer xresolution" [300] "integer yresolution" [300]
+ "integer xresolution" [512] "integer yresolution" [512]
   "string filename" "pinkfloyd.exr" 
 
 Sampler "lowdiscrepancy" "integer pixelsamples" [32]
@@ -11,7 +11,7 @@ SurfaceIntegrator "photonmap" "integer nused" [50] "bool finalgather" ["false"]
   "integer causticphotons" [1]
 
 VolumeIntegrator "photonvolume" "float stepsize" [.05] 
-  "integer nused" [500] "float maxdist" [0.6]
+  "integer nused" [500] "float maxdist" [0.4]
   "integer volumephotons"  [5000000]
 
 Rotate 5 1 0 0
