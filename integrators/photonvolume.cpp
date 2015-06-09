@@ -191,8 +191,8 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
             
 
  			if (!L.IsBlack() && pdf > 0.f && vis.Unoccluded(scene)) {
+
                 Spectrum Ld = L * vis.Transmittance(scene,renderer, NULL, rng, arena);
-            
                 if(rv){
                     L_d = rv->rainbowReflection(Ld, ray.d, wo);
                 }
@@ -212,7 +212,7 @@ Spectrum PhotonVolumeIntegrator::Li(const Scene *scene, const Renderer *renderer
 		else
 			L_i = L_d;
 
-		Spectrum nLv = (sa*vr->Lve(p,w,ray.time)*step) + (ss*L_i*step) + (Tr * Lv);
+		Spectrum nLv = (sa*vr->Lve(p,w,ray.time)*step) + (ss*L_i*step) + (Tr * Lv)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ;
 
 		Lv = nLv;
  		sampOffset++;

@@ -1,4 +1,5 @@
 Film "image"
+ # "integer xresolution" [851] "integer yresolution" [315]
  "integer xresolution" [300] "integer yresolution" [300]
   "string filename" "pinkfloyd.exr" 
 
@@ -9,9 +10,9 @@ SurfaceIntegrator "photonmap" "integer nused" [50] "bool finalgather" ["false"]
   "float maxdist" [ .15] "integer indirectphotons" [0]
   "integer causticphotons" [1]
 
-VolumeIntegrator "photonvolume" "float stepsize" [.075] 
-  "integer nused" [300] "float maxdist" [0.5]
-  "integer volumephotons"  [500000]
+VolumeIntegrator "photonvolume" "float stepsize" [.05] 
+  "integer nused" [500] "float maxdist" [0.6]
+  "integer volumephotons"  [5000000]
 
 Rotate 5 1 0 0
 Camera "perspective" "float fov" [70]
@@ -29,12 +30,12 @@ AttributeBegin
 LightSource "spot" "point from" [-3 0.72 0 ] "point to" [0 1.55 0 ]
   "color I" [15000 15000 15000 ] "float coneangle" [0.8]
 
-LightSource "point" "point from" [0.1 1.35 -4] "color I" [8 8 8]
+LightSource "point" "point from" [0.1 1.35 -4] "color I" [4 4 4]
 AttributeEnd
 
 
 AttributeBegin
-Material  "glass" "float index" [1.3] "float Vn" [4]
+Material  "glass" "float index" [1.3] "float Vn" [2.75]
           "color Kr" [0 0 0] "color Kt" [1 1 1]
 Translate 0.1 1.35 0
 Rotate 90 0 1 0
