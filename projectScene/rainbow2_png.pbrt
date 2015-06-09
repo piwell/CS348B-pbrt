@@ -1,5 +1,5 @@
 Film "image" "string filename" "secondary_rainbow.png"
- "integer xresolution" [1024] "integer yresolution" [1024]
+ "integer xresolution" [512] "integer yresolution" [512]
    
 
 Sampler "lowdiscrepancy" "integer pixelsamples" [8]
@@ -22,7 +22,6 @@ WorldBegin
 
 Translate 5 -0.5 3.5
 
-
 #Rainow
 Volume "rainbow"
   "color sigma_a" [.05 .05 .05 ]
@@ -32,6 +31,7 @@ Volume "rainbow"
 
 LightSource "distant" "point from" [3.4 3 -5 ] "point to" [0 0 0 ]
   "color L" [150 150 150 ]
+
 
 
 # Walls

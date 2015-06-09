@@ -50,18 +50,23 @@ Spectrum RainbowVolume::rainbowReflection(const Spectrum& spectrum,
     float innerGlow = LerpTransfer(theta, 40.4, 40.45, 1.0, 0.9);
     I *= innerGlow;
 
-    float rainbowI = 0.92f;
-    float mistI = 0.08f;
+    float rainbowI = 1.0f;
 
+    float primaryRainbowI = 0.92f;
+    float secondaryRainbowI = 0.42 * primaryRainbowI; //Second rainbow has 42% intensity of primary
+    float mistI = 0.08f;
+    
 
     //Test primary rainbow
     float lambda = LerpOrZero(theta, 40.4, 42.3, 400.0, 700.0);
-    if(!lambda) {
+    if(lambda){
+        rainbowI *= primaryRainbowI;
+    }
+    else {
         //Test secondary rainbow
         lambda = LerpOrZero(theta, 51.0, 54.4, 700.0, 400.0);
         if(lambda){
-            //Second rainbow has 42% intensity of primary
-            rainbowI *= 0.42;
+            rainbowI *= secondaryRainbowI;
         }
     }
     if(!lambda) {
